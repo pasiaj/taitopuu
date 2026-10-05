@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Peruskoulun taitopuu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07080b; --panel: rgba(16,14,12,0.94); --line: #4a3f2a; --gold: #d9b45c; --gold-2: #f1d27a;
+  --text: #e9dfc8; --muted: #a39780; --faint: #6d6352; --accent: #8cc8ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.5 Inter, system-ui, sans-serif; overflow: hidden; }
+canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+canvas.drag { cursor: grabbing; }
+.frame { border: 1px solid var(--line); background: var(--panel); box-shadow: 0 0 0 1px #000, inset 0 0 0 1px rgba(217,180,92,0.08), 0 10px 40px rgba(0,0,0,.6); border-radius: 6px; }
+h1, h2, h3, .cinzel { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
+
+#top { position: fixed; top: 12px; left: 12px; right: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; pointer-events: none; }
+#top > * { pointer-events: auto; }
+#title { padding: 8px 14px; }
+#title h1 { margin: 0; font-size: 18px; color: var(--gold-2); }
+#title div { font-size: 11.5px; color: var(--muted); }
+#searchbox { position: relative; }
+#q { width: 240px; padding: 9px 12px; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 6px; font: inherit; outline: none; }
+#q:focus { border-color: var(--gold); }
+#results { position: absolute; top: 42px; left: 0; width: 340px; max-height: 60vh; overflow: auto; display: none; }
+#results button { display: block; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid rgba(74,63,42,.5); color: var(--text); padding: 7px 11px; cursor: pointer; font: inherit; }
+#results button:hover, #results button.on { background: rgba(217,180,92,.12); }
+#results small { color: var(--muted); display: block; font-size: 11.5px; }
+select, .btn { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; font: inherit; cursor: pointer; }
+.btn:hover, select:hover { border-color: var(--gold); }
+.btn.on { border-color: var(--gold); color: var(--gold-2); }
+a.btn { text-decoration: none; display: inline-block; }
+
+#grade { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); width: min(720px, calc(100% - 24px)); padding: 10px 16px 12px; display: flex; align-items: center; gap: 14px; }
+#grade .lbl { min-width: 128px; }
+#grade .lbl b { font-family: Cinzel, serif; color: var(--gold-2); font-size: 18px; display: block; line-height: 1.1; }
+#grade .lbl span { color: var(--muted); font-size: 11.5px; }
+#ticks { flex: 1; position: relative; }
+#g { width: 100%; accent-color: var(--gold); }
+#ticks .row { display: flex; justify-content: space-between; font-size: 11px; color: var(--faint); padding: 0 2px; }
+#only { white-space: nowrap; font-size: 13px; padding: 7px 10px; }
+#play { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; padding: 0; font-size: 15px; }
+
+#panel { position: fixed; top: 74px; right: 12px; bottom: 96px; width: 400px; overflow: auto; padding: 18px 20px 20px; display: none; }
+#panel.open { display: block; }
+#panel .close { position: absolute; top: 10px; right: 10px; background: none; border: 0; color: var(--muted); font-size: 20px; cursor: pointer; }
+#panel .kind { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+#panel h2 { margin: 4px 0 6px; font-size: 22px; color: var(--gold-2); line-height: 1.2; }
+#panel .crumbs { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+#panel .crumbs a, #panel .lnk { color: var(--accent); cursor: pointer; text-decoration: none; }
+#panel .crumbs a:hover, #panel .lnk:hover { text-decoration: underline; }
+#panel h3 { font-size: 13px; color: var(--gold); margin: 18px 0 6px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+#panel p { margin: 6px 0; }
+.tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }
+.tag { font-size: 11px; padding: 2px 7px; border: 1px solid var(--line); border-radius: 99px; color: var(--muted); }
+.tag.g { color: var(--gold-2); border-color: var(--gold); }
+.lv { display: grid; grid-template-columns: 62px 1fr; gap: 0; border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+.lv div { padding: 6px 9px; border-top: 1px solid rgba(74,63,42,.6); font-size: 13px; }
+.lv div:nth-child(-n+2) { border-top: 0; }
+.lv .k { color: var(--muted); font-family: Cinzel, serif; font-size: 12px; background: rgba(217,180,92,.05); }
+.lv .now { background: rgba(217,180,92,.13); }
+.lv .top { color: var(--gold-2); }
+.crit { font-size: 12.5px; border-left: 2px solid var(--line); padding: 3px 0 3px 10px; margin: 7px 0; }
+.crit b { color: var(--gold); font-weight: 600; }
+.crit q { color: var(--text); }
+ul.lst { margin: 4px 0; padding-left: 18px; }
+ul.lst li { margin: 2px 0; }
+ul.lst small { color: var(--faint); }
+.note { font-size: 11.5px; color: var(--faint); margin-top: 14px; }
+
+#legend { position: fixed; left: 12px; bottom: 96px; padding: 10px 14px; font-size: 12px; width: 230px; }
+#legend .r { display: flex; align-items: center; gap: 9px; margin: 3px 0; }
+#legend svg { flex: none; }
+#legend .h { font-family: Cinzel, serif; color: var(--gold); margin-bottom: 4px; display: flex; justify-content: space-between; cursor: pointer; }
+#legend.min .body { display: none; }
+#tip { position: fixed; pointer-events: none; padding: 7px 10px; font-size: 12.5px; max-width: 280px; display: none; z-index: 5; }
+#tip b { color: var(--gold-2); font-family: Cinzel, serif; }
+#tip small { color: var(--muted); display: block; }
+
+@media (max-width: 760px) {
+  #title div { display: none; }
+  #q { width: calc(100vw - 150px); }
+  #results { width: calc(100vw - 24px); }
+  #panel { left: 8px; right: 8px; width: auto; top: auto; bottom: 86px; max-height: 55vh; }
+  #legend { display: none; }
+  #grade { bottom: 8px; padding: 8px 10px; gap: 8px; }
+  #grade .lbl { min-width: 84px; }
+  #grade .lbl span { display: none; }
+  #only { font-size: 12px; padding: 6px 8px; }
+  .hide-m { display: none; }
+}
+</style>
+</head>
+<body>
+<canvas id="cv" aria-label="Peruskoulun taitopuu"></canvas>
+
+<div id="top">
+  <div id="title" class="frame"><h1>Peruskoulun taitopuu</h1><div id="stats">POPS 2014 · huippuoppilaan polku</div></div>
+  <div id="searchbox">
+    <input id="q" type="search" placeholder="Hae taitoa… (esim. yhtälö, fotosynteesi)" autocomplete="off">
+    <div id="results" class="frame"></div>
+  </div>
+  <select id="subj" title="Korosta oppiaine"><option value="">Kaikki oppiaineet</option></select>
+  <button class="btn on hide-m" id="links" title="Näytä alueiden väliset edellytykset">Verkko</button>
+  <button class="btn" id="home" title="Koko puu">⌂</button>
+  <a class="btn hide-m" href="esittely/">Mikä tämä on?</a>
+  <a class="btn" href="https://github.com/pasiaj/taitopuu" target="_blank" rel="noopener" title="Lähdekoodi GitHubissa"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="vertical-align:-3px"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span class="hide-m"> GitHub</span></a>
+</div>
+
+<div id="legend" class="frame">
+  <div class="h" id="legh"><span>Selite</span><span>–</span></div>
+  <div class="body">
+    <div class="r"><svg width="26" height="26"><circle cx="13" cy="13" r="10" fill="#7a5a2a" stroke="#d9b45c" stroke-width="2.5"/><circle cx="13" cy="13" r="12.5" fill="none" stroke="#d9b45c" stroke-opacity=".6"/></svg>Osaamisalue</div>
+    <div class="r"><svg width="26" height="26"><circle cx="13" cy="13" r="8" fill="#7a5a2a" stroke="#d9b45c" stroke-width="2"/><circle cx="13" cy="13" r="3.5" fill="#fff0c8" fill-opacity=".65"/></svg>Aihe: kokonaisuus</div>
+    <div class="r"><svg width="26" height="26"><circle cx="13" cy="13" r="5.5" fill="#7a5a2a" stroke="#d9b45c" stroke-width="1.6"/></svg>Osataito</div>
+    <div class="r"><svg width="26" height="26"><circle cx="13" cy="13" r="3" fill="#7a5a2a" stroke="#d9b45c" stroke-opacity=".75"/></svg>Atomi: käsite tai fakta</div>
+    <div class="r"><svg width="26" height="26"><circle cx="13" cy="13" r="5.5" fill="#1a1a1d" stroke="#4a4337" stroke-width="1.6"/></svg>Ei vielä tällä luokalla</div>
+    <div class="r"><svg width="26" height="10"><path d="M1 5 H25" stroke="#ffd678" stroke-width="2" stroke-dasharray="5 3"/></svg>Edellyttää (valitulle)</div>
+    <div class="r"><svg width="26" height="10"><path d="M1 5 H25" stroke="#8cc8ff" stroke-width="2" stroke-dasharray="5 3"/></svg>Tarvitaan (valitusta)</div>
+    <div class="note">Vedä: siirrä · rulla/nipistys: zoomaa · klikkaa solmua: tiedot · tuplaklikkaa: polku</div>
+  </div>
+</div>
+
+<div id="panel" class="frame"></div>
+<div id="tip" class="frame"></div>
+
+<div id="grade" class="frame">
+  <button class="btn" id="play" title="Toista luokat 1–9">▶</button>
+  <div class="lbl"><b id="glbl">Huippu</b><span id="gsub">9. luokan huipputaso</span></div>
+  <button class="btn" id="only" title="Näytä vain valitulla luokalla opittavat asiat">Vain tämä luokka</button>
+  <div id="ticks">
+    <input id="g" type="range" min="1" max="10" step="1" value="10" aria-label="Luokka">
+    <div class="row"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>★</span></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="puu.js"></script>
+<script>
+(function () {
+  'use strict';
+  const M = Puu.build(window.TAITOPUU);
+  const cv = document.getElementById('cv');
+  const V = new Puu.View(cv, M);
+  V.cam = V.fitAll();
+  window.addEventListener('resize', () => V.resize());
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  const cnt = [0, 0, 0, 0]; M.nodes.forEach(n => cnt[n.t]++);
+  $('stats').textContent = `POPS 2014 · ${cnt[3]} aluetta · ${cnt[2]} aihetta · ${cnt[1]} osataitoa · ${cnt[0]} atomia`;
+
+  // oppiaineet
+  const subs = new Set(); M.nodes.forEach(n => (n.op || []).forEach(s => subs.add(s)));
+  [...subs].sort((a, b) => (Puu.OPPIAINEET[a] || a).localeCompare(Puu.OPPIAINEET[b] || b, 'fi')).forEach(s => {
+    const o = document.createElement('option'); o.value = s; o.textContent = Puu.OPPIAINEET[s] || s; $('subj').appendChild(o);
+  });
+  $('subj').onchange = e => { V.filter = e.target.value || null; V.focus = null; V.dirty = true; };
+  $('links').onclick = e => { V.o.crossLinks = !V.o.crossLinks; e.target.classList.toggle('on', V.o.crossLinks); V.dirty = true; };
+  $('home').onclick = () => { V.focus = null; select(null); V.flyTo(V.fitAll(), 900); };
+  $('legh').onclick = () => $('legend').classList.toggle('min');
+
+  // luokka
+  const gradeText = g => g >= 10 ? ['Huippu', '9. luokan huipputaso'] : [`${g}. luokka`, g <= 2 ? 'alkuopetus' : g <= 6 ? 'vuosiluokat 3–6' : 'yläkoulu'];
+  // "Vain tämä luokka": aiemmat ja myöhemmät opit piiloon
+  let only = false;
+  function setGrade(g) {
+    V.grade = g; $('g').value = g;
+    let [a, b] = gradeText(g);
+    if (only && g >= 10) { only = false; $('only').classList.remove('on'); }
+    if (only) {
+      const set = V.setOnly(g);
+      const c = [0, 0]; set.forEach(n => { if (n.t <= 1) c[n.t]++; });
+      b = `${g}. luokalla opitaan ${c[0]} asiaa ${c[1]} taidossa`;
+    } else V.setOnly(null);
+    $('glbl').textContent = a; $('gsub').textContent = b;
+    V.dirty = true; if (V.sel) panel(V.sel);
+  }
+  $('only').onclick = () => {
+    only = !only; $('only').classList.toggle('on', only);
+    if (only && V.grade >= 10) V.grade = 1;
+    V.focus = null; setGrade(V.grade);
+  };
+  $('g').oninput = e => { stop(); setGrade(+e.target.value); };
+  let timer = null;
+  function stop() { clearInterval(timer); timer = null; $('play').textContent = '▶'; }
+  $('play').onclick = () => {
+    if (timer) return stop();
+    let g = V.grade >= (only ? 9 : 10) ? 1 : V.grade; setGrade(g);
+    $('play').textContent = '❚❚';
+    timer = setInterval(() => { g++; if (g > (only ? 9 : 10)) return stop(); setGrade(g); }, 1100);
+  };
+
+  // valinta ja paneeli
+  function select(n, fly) {
+    V.sel = n; V.dirty = true;
+    if (!n) { $('panel').classList.remove('open'); return; }
+    panel(n);
+    if (fly) {
+      const list = n.t === 3 ? [n, ...n.kids] : n.t === 2 ? [n, ...n.kids, ...n.kids.flatMap(k => k.kids)] : [n, ...n.kids, ...(n.t === 0 ? [M.byId.get(n.p)] : [])];
+      const tgt = V.fitNodes(list, 0.5);
+      if (n.t <= 1) tgt.z = Math.max(tgt.z, 1.1);
+      if (innerWidth > 760) tgt.x += 200 / tgt.z;
+      V.flyTo(tgt, 1000);
+    }
+  }
+  const ref = n => `<a class="lnk" data-id="${esc(n.id)}">${esc(n.n)}</a>`;
+  const stage = g => g <= 2 ? '1–2' : g <= 6 ? '3–6' : '7–9';
+  function panel(n) {
+    const P = $('panel'); P.classList.add('open');
+    const chain = []; let c = n.p && M.byId.get(n.p);
+    while (c) { chain.unshift(c); c = c.p && M.byId.get(c.p); }
+    let h = `<button class="close" aria-label="Sulje">×</button>`;
+    h += `<div class="kind">${Puu.TYYPIT[n.t]} · ${esc(n.id)}${n._s && n.t <= 1 ? ` · ${n.t === 0 ? '' : 'alkaa '}${n._s}. luokalla` : ''}</div>`;
+    h += `<h2>${esc(n.n)}</h2>`;
+    if (chain.length) h += `<div class="crumbs">${chain.map(ref).join(' › ')}</div>`;
+    const tags = [];
+    (n.op || []).forEach(s => tags.push(`<span class="tag">${esc(Puu.OPPIAINEET[s] || s)}</span>`));
+    (n.la || []).forEach(s => tags.push(`<span class="tag g" title="${esc(Puu.LAAJA[s] || '')}">${esc(s)} ${esc(Puu.LAAJA[s] || '')}</span>`));
+    if (tags.length) h += `<div class="tags">${tags.join('')}</div>`;
+    if (n.k) h += `<p>${esc(n.k)}</p>`;
+    if (n.o) h += `<p><b>Osaat, kun:</b> ${esc(n.o)}</p>`;
+    if (n.ex) h += `<p><b>Esimerkki:</b> ${esc(n.ex)}</p>`;
+    if (n.t === 3 && n.h) h += `<h3>Huippuoppilas 9. luokan lopussa</h3><p>${esc(n.h)}</p>`;
+    if (n.tl || (n.h && n.t === 1)) {
+      const cur = V.grade >= 10 ? 'top' : stage(V.grade);
+      h += `<h3>Taso luokittain</h3><div class="lv">`;
+      ['1–2', '3–6', '7–9'].forEach(k => { if (n.tl && n.tl[k]) h += `<div class="k ${cur === k ? 'now' : ''}">${k}</div><div class="${cur === k ? 'now' : ''}">${esc(n.tl[k])}</div>`; });
+      if (n.h) h += `<div class="k top ${cur === 'top' ? 'now' : ''}">Huippu</div><div class="top ${cur === 'top' ? 'now' : ''}">${esc(n.h)}</div>`;
+      h += `</div>`;
+    }
+    if (n.c) {
+      h += `<h3>POPSin arviointikriteerit</h3>`;
+      n.c.forEach(([mark, where, text]) => { h += `<div class="crit"><b>${esc(where)}</b><br><q>${esc(text)}</q>${mark !== '✓' ? ' ⚠' : ''}</div>`; });
+    }
+    if (n.kids.length) {
+      h += `<h3>${n.t === 3 ? 'Aiheet' : n.t === 2 ? 'Osataidot' : 'Atomit'} (${n.kids.length})</h3><ul class="lst">`;
+      n.kids.forEach(k => { h += `<li>${ref(k)}${k._s ? ` <small>${k._s}. lk</small>` : ''}</li>`; });
+      h += `</ul>`;
+    }
+    if (n.need.length) {
+      h += `<h3>Edellyttää</h3><ul class="lst">`;
+      n.need.forEach(k => { h += `<li>${ref(k)} <small>${esc(k.area ? k.area.n : '')}</small></li>`; });
+      h += `</ul>`;
+    }
+    if (n.usedBy.length) {
+      h += `<h3>Tarvitaan (${n.usedBy.length})</h3><ul class="lst">`;
+      n.usedBy.slice(0, 40).forEach(k => { h += `<li>${ref(k)} <small>${esc(k.area ? k.area.n : '')}</small></li>`; });
+      h += `</ul>`;
+    }
+    if (n.t <= 2) h += `<p style="margin-top:14px"><button class="btn" id="path">Näytä koko polku tähän taitoon</button></p>`;
+    h += `<div class="note">Lähde: Perusopetuksen opetussuunnitelman perusteet 2014 (OPH). Kriteerit sanatarkasti; tasot ja kuvaukset johdettu lähteestä.</div>`;
+    P.innerHTML = h;
+    P.querySelector('.close').onclick = () => select(null);
+    P.querySelectorAll('[data-id]').forEach(a => a.onclick = () => select(M.byId.get(a.dataset.id), true));
+    const pb = P.querySelector('#path'); if (pb) pb.onclick = () => showPath(n);
+  }
+  function showPath(n) {
+    const set = Puu.closure(n);
+    let c = n.p && M.byId.get(n.p); while (c) { set.add(c); c = c.p && M.byId.get(c.p); }
+    set.add(M.root);
+    V.focus = set; V.dirty = true;
+    V.flyTo(V.fitNodes([...set].filter(x => x !== M.root), 0.8), 1200);
+  }
+
+  // haku
+  let hits = [], hi = 0;
+  $('q').oninput = e => {
+    hits = Puu.search(M, e.target.value); hi = 0;
+    const R = $('results');
+    R.style.display = hits.length ? 'block' : 'none';
+    R.innerHTML = hits.map((n, i) => `<button data-i="${i}" class="${i === 0 ? 'on' : ''}">${esc(n.n)}<small>${Puu.TYYPIT[n.t]} · ${esc(n.area ? n.area.n : '')}</small></button>`).join('');
+    R.querySelectorAll('button').forEach(b => b.onclick = () => pickHit(+b.dataset.i));
+  };
+  $('q').onkeydown = e => {
+    if (e.key === 'Enter' && hits.length) pickHit(hi);
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      hi = Math.max(0, Math.min(hits.length - 1, hi + (e.key === 'ArrowDown' ? 1 : -1)));
+      $('results').querySelectorAll('button').forEach((b, i) => b.classList.toggle('on', i === hi)); e.preventDefault();
+    }
+    if (e.key === 'Escape') { $('results').style.display = 'none'; }
+  };
+  function pickHit(i) { $('results').style.display = 'none'; V.focus = null; select(hits[i], true); }
+
+  // osoitin: siirto, zoom, klikkaus
+  const pts = new Map(); let drag = null, moved = false, lastTap = 0, pinch = null;
+  cv.addEventListener('pointerdown', e => {
+    cv.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]);
+    V.anim = null; moved = false;
+    if (pts.size === 1) drag = { x: e.clientX, y: e.clientY, cx: V.cam.x, cy: V.cam.y };
+    if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), z: V.cam.z }; }
+    cv.classList.add('drag');
+  });
+  cv.addEventListener('pointermove', e => {
+    if (pts.has(e.pointerId)) pts.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pinch && pts.size === 2) {
+      const [a, b] = [...pts.values()];
+      zoomAt((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, pinch.z * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d / V.cam.z);
+      moved = true; return;
+    }
+    if (drag && pts.size === 1) {
+      const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
+      V.cam.x = drag.cx - dx / V.cam.z; V.cam.y = drag.cy - dy / V.cam.z; V.dirty = true; $('tip').style.display = 'none';
+      return;
+    }
+    const n = V.pick(e.clientX, e.clientY);
+    if (n !== V.hover) { V.hover = n; V.dirty = true; }
+    const T = $('tip');
+    if (n && e.pointerType === 'mouse') {
+      T.innerHTML = `<b>${esc(n.n)}</b><small>${Puu.TYYPIT[n.t]}${n.area ? ' · ' + esc(n.area.n) : ''}${n._s && n.t <= 1 ? ` · ${n._s}. lk` : ''}</small>${n.o ? esc(n.o) : n.k ? esc(n.k.slice(0, 140)) : ''}`;
+      T.style.display = 'block';
+      T.style.left = Math.min(e.clientX + 16, innerWidth - 300) + 'px'; T.style.top = (e.clientY + 16) + 'px';
+    } else T.style.display = 'none';
+    cv.style.cursor = n ? 'pointer' : '';
+  });
+  const up = e => {
+    pts.delete(e.pointerId); cv.classList.remove('drag');
+    if (pts.size < 2) pinch = null;
+    if (pts.size === 0) {
+      if (!moved) {
+        const n = V.pick(e.clientX, e.clientY);
+        const now = performance.now();
+        if (n && now - lastTap < 350 && n === V.sel && n.t <= 2) showPath(n);
+        else if (n) { if (V.focus && !V.focus.has(n)) V.focus = null; select(n, n.t >= 2); }
+        else { select(null); if (V.focus) { V.focus = null; V.dirty = true; } }
+        lastTap = now;
+      }
+      drag = null;
+    }
+  };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  cv.addEventListener('pointerleave', () => { V.hover = null; $('tip').style.display = 'none'; V.dirty = true; });
+  function zoomAt(px, py, f) {
+    const [wx, wy] = V.toWorld(px, py);
+    V.cam.z = Math.max(0.05, Math.min(6, V.cam.z * f));
+    const [nx, ny] = V.toWorld(px, py);
+    V.cam.x += wx - nx; V.cam.y += wy - ny; V.dirty = true;
+  }
+  cv.addEventListener('wheel', e => { e.preventDefault(); V.anim = null; zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0018))); }, { passive: false });
+  window.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.key === 'Escape') { select(null); V.focus = null; V.dirty = true; }
+    if (e.key === '/') { e.preventDefault(); $('q').focus(); }
+  });
+
+  // syvälinkki: #MA.4.2
+  const fromHash = () => { const n = M.byId.get(decodeURIComponent(location.hash.slice(1))); if (n) select(n, true); };
+  window.addEventListener('hashchange', fromHash); fromHash();
+})();
+</script>
+</body>
+</html>

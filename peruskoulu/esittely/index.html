@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Taitopuun esittely</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --bg: #07080b; --panel: rgba(14,12,10,0.92); --line: #4a3f2a; --gold: #d9b45c; --gold-2: #f1d27a; --text: #ece3cd; --muted: #a39780; --accent: #8cc8ff; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 16px/1.55 Inter, system-ui, sans-serif; overflow: hidden; }
+canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
+h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
+
+#card { position: fixed; left: 28px; bottom: 92px; width: min(470px, calc(100% - 32px)); padding: 22px 24px 20px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 0 0 1px #000, inset 0 0 0 1px rgba(217,180,92,.08), 0 18px 50px rgba(0,0,0,.7);
+  transition: opacity .45s, transform .45s; }
+#card.out { opacity: 0; transform: translateY(12px); }
+#card .step { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+#card h2 { margin: 6px 0 10px; font-size: 25px; line-height: 1.2; color: var(--gold-2); }
+#card p { margin: 8px 0; color: var(--text); }
+#card .big { font-family: Cinzel, serif; font-size: 40px; color: var(--gold-2); line-height: 1; margin: 6px 0; }
+#card q { display: block; border-left: 2px solid var(--gold); padding: 4px 0 4px 12px; margin: 10px 0; color: var(--text); font-size: 14.5px; }
+#card small { color: var(--muted); }
+#card .k { color: var(--gold-2); font-weight: 600; }
+#card .b { color: var(--accent); font-weight: 600; }
+
+#nav { position: fixed; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; align-items: center; gap: 14px; }
+.btn { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 9px 16px; font: 500 15px Inter, sans-serif; cursor: pointer; text-decoration: none; }
+.btn:hover { border-color: var(--gold); }
+.btn.gold { border-color: var(--gold); color: var(--gold-2); font-family: Cinzel, serif; }
+#dots { display: flex; gap: 7px; }
+#dots i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--gold); display: block; cursor: pointer; opacity: .5; }
+#dots i.on { background: var(--gold); opacity: 1; }
+#dots i.done { background: rgba(217,180,92,.4); }
+
+#intro { position: fixed; inset: 0; display: grid; place-items: center; text-align: center; background: radial-gradient(ellipse at center, rgba(40,32,18,.55), rgba(7,8,11,.96) 70%); z-index: 4; transition: opacity 1s; padding: 24px; }
+#intro.gone { opacity: 0; pointer-events: none; }
+#intro h1 { font-size: clamp(30px, 6vw, 58px); margin: 0 0 12px; color: var(--gold-2); text-shadow: 0 0 30px rgba(217,180,92,.35); }
+#intro p { color: var(--muted); max-width: 560px; margin: 0 auto 26px; font-size: 17px; }
+#hud { position: fixed; top: 18px; right: 22px; text-align: right; pointer-events: none; }
+#hud .g { font-family: Cinzel, serif; font-size: 34px; color: var(--gold-2); text-shadow: 0 0 18px rgba(217,180,92,.4); }
+#hud .s { color: var(--muted); font-size: 13px; }
+#skip { z-index: 5; position: fixed; top: 16px; left: 18px; font-size: 13px; padding: 7px 12px; }
+#gh { position: fixed; top: 16px; left: 178px; font-size: 13px; padding: 7px 12px; z-index: 5; }
+#auto.on { border-color: var(--gold); color: var(--gold-2); }
+
+@media (max-width: 760px) {
+  #card { left: 12px; right: 12px; width: auto; bottom: 76px; padding: 16px 18px; max-height: 46vh; overflow: auto; }
+  #card h2 { font-size: 21px; }
+  #card .big { font-size: 32px; }
+  body { font-size: 15px; }
+  #hud .g { font-size: 26px; }
+  #nav { gap: 8px; bottom: 12px; }
+  .btn { padding: 8px 12px; }
+}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="hud"><div class="g" id="hg"></div><div class="s" id="hs"></div></div>
+<a class="btn" id="skip" href="../">Suoraan puuhun →</a>
+<a class="btn" id="gh" href="https://github.com/pasiaj/taitopuu" target="_blank" rel="noopener" title="Lähdekoodi GitHubissa"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="vertical-align:-3px"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> GitHub</a>
+
+<div id="card" class="out"><div class="step" id="cstep"></div><h2 id="ch"></h2><div id="cb"></div></div>
+
+<div id="nav">
+  <button class="btn" id="prev" aria-label="Edellinen">←</button>
+  <div id="dots"></div>
+  <button class="btn" id="next" aria-label="Seuraava">→</button>
+  <button class="btn" id="auto" title="Etene automaattisesti">▶ Auto</button>
+</div>
+
+<div id="intro">
+  <div>
+    <h1>Mitä peruskoulussa oikeastaan opitaan?</h1>
+    <p>Yhdeksässä vuodessa lapsesta kasvaa ihminen, joka osaa satoja asioita. Tämä on kartta niistä kaikista, piirrettynä kuin pelin taitopuu.</p>
+    <button class="btn gold" id="start">Aloita kierros</button>
+  </div>
+</div>
+
+<script src="../data.js"></script>
+<script src="../puu.js"></script>
+<script>
+(function () {
+  'use strict';
+  const M = Puu.build(window.TAITOPUU);
+  const V = new Puu.View(document.getElementById('cv'), M, { crossLinks: false });
+  window.addEventListener('resize', () => V.resize());
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const all = V.fitAll(0.92);
+  V.cam = { x: 0, y: 0, z: all.z * 0.6 };
+  V.grade = 10; V.focus = new Set([M.root]);
+
+  const N = M.nodes, A = M.areas;
+  const os = N.filter(n => n.t === 1), aiheet = N.filter(n => n.t === 2), atomit = N.filter(n => n.t === 0);
+  const crossCount = M.prereq.filter(p => p[2]).length;
+
+  /* ------------------------------------------------ esimerkkien valinta datasta */
+  function prefer(list, regexes, ok) {
+    for (const r of regexes) { const f = list.find(n => r.test(n.n) && (!ok || ok(n))); if (f) return f; }
+    return list.find(n => !ok || ok(n)) || list[0];
+  }
+  const exOs = prefer(os.filter(n => n.a === 'MA' && n.kids.length >= 3),
+                      [/murtolu/i, /yhtälö/i, /prosent/i, /kertolas/i], n => n._s >= 2 && n._s <= 6);
+  const exAtom = exOs.kids.slice().sort((a, b) => a._s - b._s)[0];
+  const exAihe = M.byId.get(exOs.p), exArea = exOs.area;
+
+  // oppiaine, joka on levinnein: eniten eri alueita
+  const spread = {};
+  os.forEach(n => (n.op || []).forEach(s => { (spread[s] = spread[s] || new Set()).add(n.a); }));
+  const tagCand = Object.entries(spread).filter(([s]) => !['AI', 'MA', 'EN'].includes(s)).sort((a, b) => b[1].size - a[1].size);
+  const exTag = (tagCand.find(([s]) => s === 'YO') || tagCand[0])[0];
+  const exTagAreas = spread[exTag].size;
+
+  // polku: osataito, jonka edellytyksiä on eniten eri alueilta (7–9)
+  function pathAreas(n) { const s = Puu.closure(n); return new Set([...s].map(x => x.a)).size; }
+  const pathCand = os.filter(n => n._s >= 7 && n.need.some(m => m.a !== n.a)).map(n => [pathAreas(n), Puu.closure(n).size, n]);
+  pathCand.sort((a, b) => b[0] - a[0] || a[1] - b[1]);
+  const exPath = (pathCand.find(c => ['LT', 'MP', 'YH', 'HI'].includes(c[2].a) && c[1] < 120) || pathCand[0] || [0, 0, os[0]])[2];
+
+  // kriteeri: sama taito arvosanoilla 8 ja 9
+  const critPick = (() => {
+    const pref = ['MA', 'LT', 'HI', 'KI', 'MP', 'YH'];
+    const ordered = os.slice().sort((a, b) => ((pref.indexOf(a.a) + 99) % 99) - ((pref.indexOf(b.a) + 99) % 99));
+    for (const n of ordered) {
+      if (!n.c) continue;
+      const g8 = n.c.find(c => /7–9.*arvosana 8/.test(c[1])), g9 = n.c.find(c => /7–9.*arvosana 9/.test(c[1]));
+      if (g8 && g9 && /prosent|yhtälö|lähte|tutki|päätel|argument/i.test(n.n + g9[2])) return [n, g8, g9];
+    }
+    for (const n of os) { if (!n.c) continue;
+      const g8 = n.c.find(c => /arvosana 8/.test(c[1])), g9 = n.c.find(c => /arvosana 9/.test(c[1])); if (g8 && g9) return [n, g8, g9]; }
+    return null;
+  })();
+
+  const hud = (g, s) => { $('hg').textContent = g || ''; $('hs').textContent = s || ''; };
+  const fit = (list, pad) => V.fitNodes(list, pad);
+  // kortti peittää osan ruudusta: sovitetaan näkyvään osaan
+  const shift = t => {
+    if (innerWidth > 760) { t.z *= Math.min(1, (V.w - 520) / V.w + 0.08); t.x -= 250 / t.z; }
+    else { t.z *= 0.58; t.y += V.h * 0.2 / t.z; }
+    return t;
+  };
+  const desc = n => [n, ...n.kids.flatMap(desc)];
+  const anc = n => { const out = []; let c = n.p && M.byId.get(n.p); while (c) { out.push(c); c = c.p && M.byId.get(c.p); } return out; };
+
+  /* ----------------------------------------------------------- kohtaukset */
+  let timers = [];
+  const later = (ms, f) => timers.push(setTimeout(f, ms));
+  const every = (ms, f) => { const id = setInterval(f, ms); timers.push(id); return id; };
+  const clear = () => { timers.forEach(t => { clearTimeout(t); clearInterval(t); }); timers = []; };
+  const lit = list => { V.focus = new Set([M.root, ...list]); V.dirty = true; };
+  const add = list => { list.forEach(n => V.focus.add(n)); V.dirty = true; };
+
+  const S = [
+    {
+      h: 'Yksi pieni asia',
+      b: () => `<p>Kaikki alkaa pienestä. Tämä valopiste on <span class="k">atomi</span>: yksi käsite, fakta tai perustekniikka.</p>
+        <p><span class="k">${esc(exAtom.n)}</span>${exAtom.k ? ` – ${esc(exAtom.k)}` : ''}</p>
+        <p><small>Tämä opitaan tyypillisesti ${exAtom._s}. luokalla.</small></p>`,
+      go() {
+        V.grade = 10; V.sel = exAtom; lit([exAtom]);
+        V.flyTo(shift({ x: exAtom.x, y: exAtom.y, z: 2.6 }), 2200);
+        hud(`${exAtom._s}. luokka`, exArea.n);
+      }
+    },
+    {
+      h: 'Atomeista syntyy taito',
+      b: () => `<p>Kun muutama atomi on hallussa, niistä syntyy <span class="k">osataito</span>, jotain mitä osaa <em>tehdä</em>.</p>
+        <p><span class="k">${esc(exOs.n)}</span>: ${esc(exOs.o || exOs.k || '')}</p>
+        <p><small>Kultaiset viivat näyttävät, mistä taito koostuu.</small></p>`,
+      go() {
+        V.sel = exOs; lit([exAtom]); hud(`${exOs._s}. luokalta`, exArea.n);
+        V.flyTo(shift(fit([exOs, ...exOs.kids], 0.35)), 1600);
+        exOs.kids.forEach((k, i) => later(700 + i * 450, () => add([k])));
+        later(900 + exOs.kids.length * 450, () => add([exOs]));
+      }
+    },
+    {
+      h: 'Taidoista kokonaisuus',
+      b: () => `<p>Taidot ryhmittyvät <span class="k">aiheiksi</span>, isoiksi kokonaisuuksiksi kuten <span class="k">${esc(exAihe.n)}</span>.</p>
+        <p>Aihe on hallussa, kun sen taidot ovat. Juuri näitä kokonaisuuksia huippuoppilas osaa yhdistellä 9. luokalla.</p>`,
+      go() {
+        V.sel = exAihe; lit(desc(exOs)); hud(exAihe.n, exArea.n);
+        V.flyTo(shift(fit(desc(exAihe), 0.6)), 1500);
+        exAihe.kids.filter(k => k !== exOs).forEach((k, i) => later(500 + i * 260, () => add(desc(k))));
+        later(700 + exAihe.kids.length * 260, () => add([exAihe]));
+      }
+    },
+    {
+      h: 'Kokonaisuuksista osaamisalue',
+      b: () => `<p>Aiheet kasvavat haaraksi: <span class="k">osaamisalueeksi</span>. Tämä on <span class="k">${esc(exArea.n)}</span>, jossa on ${exArea.kids.length} aihetta ja ${exArea.kids.reduce((s, a) => s + a.kids.length, 0)} taitoa.</p>
+        <p>Haara lähtee keskeltä ja ulottuu ulospäin: mitä kauempana keskustasta, sitä pidemmälle asiassa on päästy.</p>`,
+      go() {
+        V.sel = exArea; lit(desc(exAihe)); hud(exArea.n, `${desc(exArea).length} solmua`);
+        V.flyTo(shift(fit([exArea, ...desc(exArea)], 0.75)), 1600);
+        exArea.kids.filter(k => k !== exAihe).forEach((k, i) => later(400 + i * 300, () => add(desc(k))));
+        later(500 + exArea.kids.length * 300, () => add([exArea]));
+      }
+    },
+    {
+      h: 'Koko peruskoulu',
+      b: () => `<p>Peruskoulussa on <span class="k">${A.length} osaamisaluetta</span>: ${aiheet.length} aihetta, ${os.length} osataitoa ja ${atomit.length} atomia. Ne kaikki on johdettu Opetushallituksen opetussuunnitelman perusteista.</p>
+        <p>Keskellä on <span class="k">huippuoppilas</span>, ja ympärillä kaikki, mitä hänestä kasvaa.</p>`,
+      go() {
+        V.sel = null; lit(desc(exArea));
+        V.flyTo(shift(V.fitAll(0.9)), 1800);
+        A.filter(a => a !== exArea).forEach((a, i) => later(600 + i * 170, () => { add(desc(a)); hud(a.n, `${i + 2} / ${A.length}`); }));
+        later(900 + A.length * 170, () => { V.focus = null; V.dirty = true; hud('', ''); });
+      }
+    },
+    {
+      h: 'Taidot, ei oppiaineet',
+      b: () => `<p>Koulun lukujärjestyksessä on oppiaineita. Puu on kuitenkin rakennettu <span class="k">taidoista</span>, koska sama taito palvelee monta ainetta.</p>
+        <p>Valaistuina ovat taidot, joita <span class="k">${esc(Puu.OPPIAINEET[exTag] || exTag)}</span> opettaa. Ne ovat levittyneet <span class="k">${exTagAreas} eri osaamisalueelle</span>.</p>`,
+      go() {
+        V.sel = null; V.focus = null; V.filter = exTag; V.dirty = true;
+        V.flyTo(shift(V.fitAll(0.95)), 1200);
+        hud(Puu.OPPIAINEET[exTag] || exTag, `${exTagAreas} osaamisaluetta`);
+      },
+      leave() { V.filter = null; }
+    },
+    {
+      h: 'Taidot nojaavat toisiinsa',
+      b: () => `<p>Puu on myös verkko. Taitoa <span class="k">${esc(exPath.n)}</span> ei voi oppia tyhjästä, vaan se tarvitsee taitoja ${pathAreas(exPath) - 1} muulta alueelta.</p>
+        <p>Katkoviivat ovat <span class="k">edellytyksiä</span>. Koko puussa niitä on ${M.prereq.length}, joista ${crossCount} ylittää alueiden rajat.</p>`,
+      go() {
+        V.filter = null; V.sel = exPath;
+        const set = Puu.closure(exPath); anc(exPath).forEach(a => set.add(a));
+        const list = [...set];
+        lit([exPath]);
+        V.flyTo(shift(fit(list, 0.75)), 1600);
+        const order = list.filter(n => n !== exPath).sort((a, b) => Math.hypot(a.x - exPath.x, a.y - exPath.y) - Math.hypot(b.x - exPath.x, b.y - exPath.y));
+        const step = Math.max(12, 2200 / order.length);
+        order.forEach((n, i) => later(500 + i * step, () => add([n])));
+        hud(exPath.area.n, `${set.size} solmua polulla`);
+      }
+    },
+    {
+      h: 'Luokka kerrallaan',
+      b: () => `<p>Mikään ei ala yhtä aikaa. Katso, miten puu syttyy luokka luokalta: jokainen taito alkaa tietyllä luokalla ja kirkastuu, kun oppilas kasvaa.</p>
+        <p><small>Kirkkaus kertoo, kuinka pitkällä taidossa ollaan. Täysi loisto on 9. luokan huipputaso.</small></p>`,
+      go() {
+        V.sel = null; V.focus = null; V.filter = null;
+        V.flyTo(shift(V.fitAll(0.95)), 1000);
+        let g = 1; V.grade = 1; V.dirty = true;
+        const show = () => { const c = os.filter(n => n._s <= g).length; hud(`${g}. luokka`, `${c} / ${os.length} taitoa aloitettu`); };
+        show();
+        const id = every(1500, () => { g++; if (g > 9) { clearInterval(id); return; } V.grade = g; V.dirty = true; show(); });
+      }
+    },
+    {
+      h: 'Huippuoppilas',
+      b: () => critPick ? `<p>Opetussuunnitelma kertoo tarkasti, mitä eri arvosanoihin vaaditaan. Taidossa <span class="k">${esc(critPick[0].n)}</span>:</p>
+        <q><small>Arvosana 8</small><br>${esc(critPick[1][2])}</q>
+        <q><small>Arvosana 9</small><br>${esc(critPick[2][2])}</q>
+        <p>Puun jokainen taito on kuvattu tälle huipputasolle.</p>`
+        : `<p>Puun jokainen taito on kuvattu huipputasolle: arvosanan 9 tasolle 9. luokan lopussa.</p>`,
+      go() {
+        V.grade = 10; V.focus = null; V.filter = null; V.dirty = true;
+        const n = critPick ? critPick[0] : os[0];
+        V.sel = n;
+        V.flyTo(shift(fit([n, ...n.kids, ...n.need], 0.45)), 1600);
+        hud('Huippu', '9. luokan lopussa');
+      }
+    },
+    {
+      h: 'Tutki itse',
+      b: () => `<p>Nyt tiedät, miten puuta luetaan:</p>
+        <p>• <span class="k">pienet pisteet</span> ovat käsitteitä, <span class="k">isommat</span> taitoja ja kokonaisuuksia<br>
+        • <span class="k">haarat</span> ovat osaamisalueita<br>
+        • <span class="b">katkoviivat</span> näyttävät, mitä taito vaatii<br>
+        • <span class="k">luokkaliukusäädin</span> näyttää, mitä missäkin vaiheessa osataan</p>
+        <p><a class="btn gold" href="../">Avaa taitopuu →</a></p>`,
+      go() {
+        V.sel = null; V.focus = null; V.grade = 10; V.dirty = true; V.o.crossLinks = true;
+        V.flyTo(shift(V.fitAll(0.95)), 1600); hud('', '');
+      },
+      leave() { V.o.crossLinks = false; }
+    }
+  ];
+
+  /* ------------------------------------------------------------ navigointi */
+  let cur = -1, auto = false, autoT = null;
+  const dots = $('dots');
+  S.forEach((_, i) => { const d = document.createElement('i'); d.title = S[i].h; d.onclick = () => go(i); dots.appendChild(d); });
+  function go(i) {
+    if (i < 0 || i >= S.length) return;
+    clear();
+    if (cur >= 0 && S[cur].leave) S[cur].leave();
+    cur = i;
+    const c = $('card'); c.classList.add('out');
+    setTimeout(() => {
+      $('cstep').textContent = `${i + 1} / ${S.length}`;
+      $('ch').textContent = S[i].h; $('cb').innerHTML = S[i].b(); c.classList.remove('out');
+    }, 300);
+    [...dots.children].forEach((d, k) => { d.className = k === i ? 'on' : k < i ? 'done' : ''; });
+    S[i].go();
+    clearTimeout(autoT);
+    if (auto && i < S.length - 1) autoT = setTimeout(() => go(i + 1), i === 7 ? 15000 : 9000);
+  }
+  $('prev').onclick = () => go(cur - 1);
+  $('next').onclick = () => go(cur + 1);
+  $('auto').onclick = e => { auto = !auto; e.target.classList.toggle('on', auto); e.target.textContent = auto ? '❚❚ Auto' : '▶ Auto'; if (auto && cur < S.length - 1) autoT = setTimeout(() => go(cur + 1), 2500); else clearTimeout(autoT); };
+  window.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); if ($('intro').classList.contains('gone')) go(cur + 1); else begin(); }
+    if (e.key === 'ArrowLeft') go(cur - 1);
+  });
+  function begin() { $('intro').classList.add('gone'); go(0); }
+  $('start').onclick = begin;
+  // ennen aloitusta puu pyörii hitaasti taustalla
+  V.focus = null; V.grade = 10; V.o.crossLinks = true; V.dirty = true;
+  let spin = 0;
+  const idle = setInterval(() => {
+    if ($('intro').classList.contains('gone')) { clearInterval(idle); V.o.crossLinks = false; return; }
+    spin += 0.004; V.cam.x = Math.cos(spin) * 300; V.cam.y = Math.sin(spin) * 300; V.dirty = true;
+  }, 30);
+})();
+</script>
+</body>
+</html>
