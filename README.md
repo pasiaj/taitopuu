@@ -31,6 +31,7 @@ tavoitteista, sisältöalueista ja arviointikriteereistä vuosiluokilla 1–2,
 | Polku | Mitä |
 |---|---|
 | `peruskoulu/index.html` | Interaktiivinen taitopuu (canvas, ei riippuvuuksia) |
+| `peruskoulu/?jarjestys=oppiaineet`, `?jarjestys=laaja-alaiset` | Sama Path of Exile -puu oppiaineiden tai laaja-alaisten osaamisten (L1–L7) kautta järjestettynä. Taito näkyy jokaisessa haarassa, johon se kuuluu. Kotihaarassa ovat myös sen käsitteet, ja muut kopiot on merkitty katkoviivakehyksellä. Kotihaara on oppiaineissa se aine, jossa taitoa opetetaan sen ylimmällä tasolla, ja laaja-alaisissa harvinaisin merkityistä L:istä. |
 | `peruskoulu/esittely/` | Animoitu kierros katsojalle, joka ei tunne puuta |
 | `peruskoulu/duolingo/` | Duolingo-näkymä: kurssi = osaamisalue, osio = vaihe, yksikkö = luokka, pallo = osataito, ja sen oppitunti kysyy niitä käsitteitä, jotka opitaan sillä luokalla (monivalinnat datasta). Kertauspokaalit, huipputaso, XP, putki ja päivän tavoite tallentuvat selaimeen. |
 | `peruskoulu/minecraft/` | Minecraft-näkymä: välilehti = osaamisalue, edistysaskelpuu kasvaa oikealle (alue → aihe → osataito saman aiheen edellytyksen perään), kokemuspalkin taso = luokka, "Edistysaskel saavutettu!" -ilmoitukset, työpöytä näyttää atomit raaka-aineina. Grafiikka on ohjelmallista pikseligrafiikkaa. |

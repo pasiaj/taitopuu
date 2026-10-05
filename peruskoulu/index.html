@@ -31,6 +31,11 @@ h1, h2, h3, .cinzel { font-family: Cinzel, Georgia, serif; letter-spacing: .02em
 #results button { display: block; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid rgba(74,63,42,.5); color: var(--text); padding: 7px 11px; cursor: pointer; font: inherit; }
 #results button:hover, #results button.on { background: rgba(217,180,92,.12); }
 #results small { color: var(--muted); display: block; font-size: 11.5px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--panel); }
+.seg button { background: none; border: 0; border-right: 1px solid var(--line); color: var(--muted); padding: 8px 11px; font: inherit; cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button:hover { color: var(--text); }
+.seg button.on { color: #1b130a; background: linear-gradient(var(--gold-2), var(--gold)); }
 select, .btn { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; font: inherit; cursor: pointer; }
 .btn:hover, select:hover { border-color: var(--gold); }
 .btn.on { border-color: var(--gold); color: var(--gold-2); }
@@ -85,6 +90,7 @@ ul.lst small { color: var(--faint); }
 @media (max-width: 760px) {
   #title div { display: none; }
   #q { width: calc(100vw - 150px); }
+  .seg button { padding: 7px 8px; font-size: 12.5px; }
   #results { width: calc(100vw - 24px); }
   #panel { left: 8px; right: 8px; width: auto; top: auto; bottom: 86px; max-height: 55vh; }
   #legend { display: none; }
@@ -105,6 +111,9 @@ ul.lst small { color: var(--faint); }
     <input id="q" type="search" placeholder="Hae taitoa… (esim. yhtälö, fotosynteesi)" autocomplete="off">
     <div id="results" class="frame"></div>
   </div>
+  <div id="mode" class="seg" role="tablist" aria-label="Järjestä puu">
+    <button data-m="alueet" title="Järjestä osaamisalueittain">Alueet</button><button data-m="oppiaineet">Oppiaineet</button><button data-m="laaja" title="Järjestä laaja-alaisen osaamisen (L1–L7) mukaan">Laaja-alaiset</button>
+  </div>
   <select id="subj" title="Korosta oppiaine"><option value="">Kaikki oppiaineet</option></select>
   <button class="btn on hide-m" id="links" title="Näytä alueiden väliset edellytykset">Verkko</button>
   <button class="btn" id="home" title="Koko puu">⌂</button>
@@ -119,6 +128,7 @@ ul.lst small { color: var(--faint); }
     <div class="r"><svg width="26" height="26"><circle cx="13" cy="13" r="5.5" fill="#7a5a2a" stroke="#d9b45c" stroke-width="1.6"/></svg>Osataito</div>
     <div class="r"><svg width="26" height="26"><circle cx="13" cy="13" r="3" fill="#7a5a2a" stroke="#d9b45c" stroke-opacity=".75"/></svg>Atomi: käsite tai fakta</div>
     <div class="r"><svg width="26" height="26"><circle cx="13" cy="13" r="5.5" fill="#1a1a1d" stroke="#4a4337" stroke-width="1.6"/></svg>Ei vielä tällä luokalla</div>
+    <div class="r" id="legdup" style="display:none"><svg width="26" height="26"><circle cx="13" cy="13" r="5.5" fill="#7a5a2a" stroke="#d9b45c" stroke-width="1.6"/><circle cx="13" cy="13" r="9.5" fill="none" stroke="#f1d27a" stroke-dasharray="3 3"/></svg>Sama taito, kotipaikka toisessa haarassa</div>
     <div class="r"><svg width="26" height="10"><path d="M1 5 H25" stroke="#ffd678" stroke-width="2" stroke-dasharray="5 3"/></svg>Edellyttää (valitulle)</div>
     <div class="r"><svg width="26" height="10"><path d="M1 5 H25" stroke="#8cc8ff" stroke-width="2" stroke-dasharray="5 3"/></svg>Tarvitaan (valitusta)</div>
     <div class="note">Vedä: siirrä · rulla/nipistys: zoomaa · klikkaa solmua: tiedot · tuplaklikkaa: polku</div>
@@ -144,16 +154,24 @@ ul.lst small { color: var(--faint); }
 <script>
 (function () {
   'use strict';
-  const M = Puu.build(window.TAITOPUU);
+  // Järjestys: osaamisalueet (oletus), oppiaineet tai laaja-alaiset osaamiset
+  const MODE = (new URLSearchParams(location.search).get('jarjestys') || 'alueet').replace('laaja-alaiset', 'laaja');
+  const M = Puu.build(Puu.regroup(window.TAITOPUU, MODE));
   const cv = document.getElementById('cv');
   const V = new Puu.View(cv, M);
   V.cam = V.fitAll();
   window.addEventListener('resize', () => V.resize());
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  if (MODE !== 'alueet') $('legdup').style.display = 'flex';
 
-  const cnt = [0, 0, 0, 0]; M.nodes.forEach(n => cnt[n.t]++);
-  $('stats').textContent = `POPS 2014 · ${cnt[3]} aluetta · ${cnt[2]} aihetta · ${cnt[1]} osataitoa · ${cnt[0]} atomia`;
+  const cnt = [0, 0, 0, 0]; M.nodes.forEach(n => { if (!n.dup) cnt[n.t]++; });
+  const MODE_TXT = { alueet: `${cnt[3]} osaamisaluetta · ${cnt[2]} aihetta`, oppiaineet: `${cnt[3]} oppiainehaaraa`, laaja: `${cnt[3]} laaja-alaista osaamista` };
+  $('stats').textContent = `POPS 2014 · ${MODE_TXT[MODE] || MODE_TXT.alueet} · ${cnt[1]} osataitoa · ${cnt[0]} atomia`;
+  document.querySelectorAll('#mode button').forEach(b => {
+    b.classList.toggle('on', b.dataset.m === MODE);
+    b.onclick = () => { const u = new URL(location.href); if (b.dataset.m === 'alueet') u.searchParams.delete('jarjestys'); else u.searchParams.set('jarjestys', b.dataset.m === 'laaja' ? 'laaja-alaiset' : b.dataset.m); location.href = u.toString(); };
+  });
 
   // oppiaineet
   const subs = new Set(); M.nodes.forEach(n => (n.op || []).forEach(s => subs.add(s)));
@@ -223,6 +241,16 @@ ul.lst small { color: var(--faint); }
     (n.op || []).forEach(s => tags.push(`<span class="tag">${esc(Puu.OPPIAINEET[s] || s)}</span>`));
     (n.la || []).forEach(s => tags.push(`<span class="tag g" title="${esc(Puu.LAAJA[s] || '')}">${esc(s)} ${esc(Puu.LAAJA[s] || '')}</span>`));
     if (tags.length) h += `<div class="tags">${tags.join('')}</div>`;
+    if (n.orig && n.t === 1) {
+      const oa = M.byId.get(n.orig[0]) || window.TAITOPUU.nodes.find(x => x.id === n.orig[0]);
+      const oi = window.TAITOPUU.nodes.find(x => x.id === n.orig[1]);
+      h += `<p style="font-size:12.5px;color:var(--muted)">Osaamisalueessa: <a class="lnk" href="?#${esc(n.home)}">${esc(oa ? oa.n : n.orig[0])} › ${esc(oi ? oi.n : '')}</a></p>`;
+    }
+    if (n.dup) h += `<p style="font-size:12.5px;color:var(--muted)">Katkoviivakehys: taidon kotipaikka on haarassa <a class="lnk" data-id="${esc(n.home)}">${esc((M.byId.get(n.homeBranch) || {}).n || '')}</a>, jossa ovat myös sen käsitteet.</p>`;
+    if (n.t === 3 && n.key) {
+      const all = M.nodes.filter(x => x.t === 1 && x.a === n.id), homeN = all.filter(x => !x.dup).length;
+      h += `<p>${n.mode === 'laaja' ? 'Laaja-alainen osaaminen' : 'Oppiaine'}: ${all.length} taitoa. Niistä ${homeN} on kotipaikassaan tässä haarassa, ja ${all.length - homeN} on kopioita, joiden kotipaikka on toisessa haarassa.</p>`;
+    }
     if (n.k) h += `<p>${esc(n.k)}</p>`;
     if (n.o) h += `<p><b>Osaat, kun:</b> ${esc(n.o)}</p>`;
     if (n.ex) h += `<p><b>Esimerkki:</b> ${esc(n.ex)}</p>`;
@@ -248,9 +276,9 @@ ul.lst small { color: var(--faint); }
       n.need.forEach(k => { h += `<li>${ref(k)} <small>${esc(k.area ? k.area.n : '')}</small></li>`; });
       h += `</ul>`;
     }
-    if (n.usedBy.length) {
-      h += `<h3>Tarvitaan (${n.usedBy.length})</h3><ul class="lst">`;
-      n.usedBy.slice(0, 40).forEach(k => { h += `<li>${ref(k)} <small>${esc(k.area ? k.area.n : '')}</small></li>`; });
+    if (n.usedBy.some(k => !k.dup)) {
+      h += `<h3>Tarvitaan (${n.usedBy.filter(k => !k.dup).length})</h3><ul class="lst">`;
+      n.usedBy.filter(k => !k.dup).slice(0, 40).forEach(k => { h += `<li>${ref(k)} <small>${esc(k.area ? k.area.n : '')}</small></li>`; });
       h += `</ul>`;
     }
     if (n.t <= 2) h += `<p style="margin-top:14px"><button class="btn" id="path">Näytä koko polku tähän taitoon</button></p>`;

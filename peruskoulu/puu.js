@@ -54,13 +54,23 @@
 
     const root = { id: 'ROOT', t: 4, n: 'Huippuoppilas', x: 0, y: 0, r: 58, kids: areas, need: [], usedBy: [], _s: 1,
                    color: '#f1d27a', colorDim: '#5b4a24', area: null };
-    layout(root, areas, data.ryhmat);
+    layout(root, areas, data.ryhmat, data.layout === 'rows');
 
     const edges = [];   // [a, b, kind] kind: 0 runko, 1 hierarkia, 2 edellytys
     areas.forEach(a => {
       edges.push([root, a, 0]);
-      let prev = a;
-      a.kids.slice().sort((p, q) => p.rr - q.rr).forEach(ai => { edges.push([prev, ai, 0]); prev = ai; });
+      const sorted = a.kids.slice().sort((p, q) => p.rr - q.rr);
+      if (data.layout === 'rows') {
+        // haarautuva runko: rypäs liittyy lähimpään sisempään ryppääseen (tai alueen keskukseen)
+        sorted.forEach((ai, i) => {
+          const inner = sorted.slice(0, i).filter(b => b.rr < ai.rr - 120);
+          const par = inner.length ? inner.reduce((m, b) => Math.hypot(b.x - ai.x, b.y - ai.y) < Math.hypot(m.x - ai.x, m.y - ai.y) ? b : m) : a;
+          edges.push([par, ai, 0]);
+        });
+      } else {
+        let prev = a;
+        sorted.forEach(ai => { edges.push([prev, ai, 0]); prev = ai; });
+      }
       a.kids.forEach(ai => ai.kids.forEach(o => {
         edges.push([ai, o, 1]);
         o.kids.forEach(t => edges.push([o, t, 1]));
@@ -86,7 +96,7 @@
 
   function hsl(h, s, l) { return `hsl(${h.toFixed(1)},${s}%,${l}%)`; }
 
-  function layout(root, areas, groups) {
+  function layout(root, areas, groups, rows) {
     const weight = a => 6 + a.kids.reduce((s, ai) => s + ai.kids.length, 0);
     const W = areas.reduce((s, a) => s + weight(a), 0);
     const avail = TAU - GROUP_GAP * groups.length;
@@ -101,16 +111,32 @@
       a.x = Math.cos(th) * R_AREA; a.y = Math.sin(th) * R_AREA; a.r = SIZE[3];
       ang += span;
       const zig = Math.min(span * 0.24, 0.11);
-      a.kids.forEach((ai, j) => {
+      a.kids.forEach(ai => {
         const nOs = ai.kids.length;
         ai.ro = Math.max(58, 16 + nOs * 15);                 // osataitorenkaan säde
         ai.cr = ai.ro + 46;                                  // ryppään säde atomeineen
-        const r = R_FIRST + j * STEP + (j % 2 ? 40 : 0);
-        const t = th + (a.kids.length > 1 ? (j % 2 ? zig : -zig) * Math.min(1, 1100 / r) : 0);
-        ai.tx = Math.cos(t) * r; ai.ty = Math.sin(t) * r;
-        ai.x = ai.tx; ai.y = ai.ty; ai.r = SIZE[2];
-        clusters.push(ai);
+        ai.r = SIZE[2];
       });
+      const put = (ai, r, t) => { ai.tx = Math.cos(t) * r; ai.ty = Math.sin(t) * r; ai.x = ai.tx; ai.y = ai.ty; clusters.push(ai); };
+      if (!rows) {
+        a.kids.forEach((ai, j) => {
+          const r = R_FIRST + j * STEP + (j % 2 ? 40 : 0);
+          put(ai, r, th + (a.kids.length > 1 ? (j % 2 ? zig : -zig) * Math.min(1, 1100 / r) : 0));
+        });
+      } else {
+        // Rivit: haarassa voi olla kymmeniä ryppäitä, joten ne asetellaan
+        // kaaririveihin niin monta rinnakkain kuin haaran leveyteen mahtuu.
+        let r = R_FIRST, i = 0;
+        while (i < a.kids.length) {
+          const next = a.kids.slice(i, i + 12);
+          const d = 2 * Math.max(...next.map(x => x.cr)) + 30;
+          const cap = Math.max(1, Math.min(next.length, Math.floor(span * 0.9 * r / d)));
+          const row = a.kids.slice(i, i + cap);
+          row.forEach((ai, j) => put(ai, r + (j % 2) * 30, th + (cap > 1 ? (j - (cap - 1) / 2) * (span * 0.9 / cap) : 0)));
+          r += Math.max(...row.map(x => x.cr)) * 2 + 40;
+          i += cap;
+        }
+      }
     });
     // törmäysten purku: ryppäät eivät saa mennä päällekkäin
     for (let it = 0; it < 260; it++) {
@@ -355,6 +381,10 @@
           ctx.beginPath(); ctx.arc(n.x, n.y, r + 7, 0, TAU);
           ctx.lineWidth = 2; ctx.strokeStyle = lv > 0 ? 'rgba(217,180,92,0.6)' : '#3a352c'; ctx.stroke();
         }
+        if (n.dup) {   // sama taito, kotipaikka toisessa haarassa
+          ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(n.x, n.y, r + 4, 0, TAU);
+          ctx.lineWidth = 1.4; ctx.strokeStyle = lv > 0 ? 'rgba(241,210,122,0.85)' : '#5a5245'; ctx.stroke(); ctx.setLineDash([]);
+        }
         if (n.t === 2) {
           ctx.beginPath(); ctx.arc(n.x, n.y, r * 0.45, 0, TAU);
           ctx.fillStyle = lv > 0 ? 'rgba(255,240,200,0.65)' : '#2b2925'; ctx.fill();
@@ -473,12 +503,84 @@
     if (!q) return [];
     const res = [];
     for (const n of model.nodes) {
+      if (n.dup) continue;
       const name = n.n.toLowerCase();
       let s = name === q ? 0 : name.startsWith(q) ? 1 : name.includes(q) ? 2 : n.id.toLowerCase() === q ? 0
             : (n.k || '').toLowerCase().includes(q) ? 4 : -1;
       if (s >= 0) res.push([s + (3 - n.t) * 0.1, n]);
     }
     return res.sort((a, b) => a[0] - b[0]).slice(0, 30).map(x => x[1]);
+  }
+
+  /* ------------------------------------------------- uudelleenryhmittely */
+  // Sama puu toisessa järjestyksessä: haarat ovat oppiaineita tai laaja-alaisia
+  // osaamisia, ryppäät alkuperäisiä aiheita tai osaamisalueita. Jokainen taito
+  // näkyy yhdessä paikassa (kotihaara); muut jäsenyydet ovat n.op / n.la -tageissa.
+  const SUBJ_RANGE = { AI: [1, 9], EN: [3, 9], VKA1: [1, 2], RU: [6, 9], MA: [1, 9], YO: [1, 6], BI: [7, 9], GE: [7, 9], FY: [7, 9], KE: [7, 9],
+    TT: [7, 9], HI: [3, 9], YH: [3, 9], ET: [1, 9], UE: [1, 9], MU: [1, 9], KU: [1, 9], KS: [1, 9], LI: [1, 9], KO: [7, 9], OP: [1, 9] };
+  const SUBJ_GROUPS = [
+    ['Kielet', ['AI', 'EN', 'RU', 'VKA1']],
+    ['Matematiikka ja luonnontieteet', ['MA', 'YO', 'BI', 'GE', 'FY', 'KE']],
+    ['Ihminen ja yhteiskunta', ['HI', 'YH', 'ET', 'UE', 'TT']],
+    ['Taide, taito ja liikunta', ['MU', 'KU', 'KS', 'KO', 'LI']],
+    ['Ohjaus ja laaja-alaiset', ['OP', 'NONE']]
+  ];
+  function lastGrade(n) {
+    const tl = n.tl || {};
+    return tl['7–9'] ? 9 : tl['3–6'] ? 6 : tl['1–2'] ? 2 : (n.s || 1);
+  }
+  function homeSubject(n, count) {
+    const op = n.op || [];
+    if (!op.length) return 'NONE';
+    if (op.length === 1) return op[0];
+    const last = lastGrade(n), first = n.s || 1;
+    const cover = g => o => { const r = SUBJ_RANGE[o] || [1, 9]; return r[0] <= g && g <= r[1]; };
+    let c = op.filter(cover(last));
+    if (!c.length) c = op;
+    const c2 = c.filter(cover(first)); if (c2.length) c = c2;
+    return c.sort((a, b) => (count[b] || 0) - (count[a] || 0))[0];
+  }
+  function regroup(data, mode) {
+    if (mode !== 'oppiaineet' && mode !== 'laaja') return data;
+    const by = new Map(data.nodes.map(n => [n.id, n]));
+    const os = data.nodes.filter(n => n.t === 1);
+    const tags = n => (mode === 'laaja' ? n.la : n.op) || [];
+    const count = {};
+    os.forEach(n => tags(n).forEach(k => { count[k] = (count[k] || 0) + 1; }));
+    // kotihaara: oppiaineissa se aine, jossa taitoa opetetaan sen ylimmällä tasolla;
+    // laaja-alaisissa harvinaisin merkityistä (kertoo taidosta eniten)
+    const home = n => mode === 'laaja'
+      ? (tags(n).slice().sort((a, b) => (count[a] || 0) - (count[b] || 0) || a.localeCompare(b))[0] || 'NONE')
+      : homeSubject(n, count);
+    const name = k => k === 'NONE' ? (mode === 'laaja' ? 'Ei laaja-alaista merkintää' : 'Ei oppiainetta (laaja-alaiset alueet)')
+      : mode === 'laaja' ? `${k} ${LAAJA[k]}` : OPPIAINEET[k] || k;
+    const groups = mode === 'laaja' ? [['Laaja-alainen osaaminen', ['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'NONE']]] : SUBJ_GROUPS;
+    const branches = new Map(), clusters = new Map(), out = [];
+    const clusterFor = (k, n) => {
+      const bid = 'B:' + k;
+      if (!branches.has(bid)) branches.set(bid, { id: bid, t: 3, a: bid, n: name(k), key: k, mode });
+      // rypäs: oppiaineissa alkuperäinen aihe, laaja-alaisissa alkuperäinen osaamisalue; enintään 8 taitoa
+      const base = mode === 'laaja' ? by.get(n.a) : by.get(n.p);
+      let part = 0;
+      while (clusters.has(`${bid}|${base.id}#${part}`) && clusters.get(`${bid}|${base.id}#${part}`).size >= 8) part++;
+      const key = `${bid}|${base.id}#${part}`;
+      if (!clusters.has(key)) clusters.set(key, { size: 0, node: { id: `C:${k}:${base.id}${part ? '.' + (part + 1) : ''}`, t: 2, a: bid, p: bid, n: base.n + (part ? ` (${part + 1})` : ''), k: base.k, orig: base.id } });
+      const c = clusters.get(key); c.size++;
+      return c.node;
+    };
+    const homeOf = new Map();
+    os.forEach(n => {
+      const h = home(n), all = tags(n).length ? tags(n) : ['NONE'];
+      homeOf.set(n.id, 'B:' + h);
+      // kotihaara ensin, jotta se saa käsitteet; muut jäsenyydet kopioina ilman käsitteitä
+      [h, ...all.filter(k => k !== h)].forEach(k => {
+        const c = clusterFor(k, n), dup = k !== h;
+        out.push(Object.assign({}, n, { id: dup ? `${n.id}@${k}` : n.id, a: 'B:' + k, p: c.id, orig: [n.a, n.p], home: n.id, homeBranch: 'B:' + h, dup }));
+      });
+    });
+    data.nodes.forEach(n => { if (n.t === 0 && homeOf.has(n.p)) out.push(Object.assign({}, n, { a: homeOf.get(n.p) })); });
+    const ryhmat = groups.map(([g, ks]) => ({ n: g, a: ks.map(k => 'B:' + k).filter(id => branches.has(id)) })).filter(g => g.a.length);
+    return { ryhmat, nodes: [...branches.values(), ...[...clusters.values()].map(c => c.node), ...out], layout: 'rows', mode };
   }
 
   const TYYPIT = ['Atomi', 'Osataito', 'Aihe', 'Osaamisalue', 'Juuri'];
@@ -494,5 +596,5 @@
     L6: 'Työelämätaidot ja yrittäjyys', L7: 'Osallistuminen, vaikuttaminen ja kestävä tulevaisuus'
   };
 
-  window.Puu = { build, View, closure, search, TYYPIT, OPPIAINEET, LAAJA };
+  window.Puu = { build, View, closure, search, regroup, TYYPIT, OPPIAINEET, LAAJA };
 })();
