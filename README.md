@@ -1,17 +1,16 @@
 # Taitopuu
 
-Tekijä: [Pasi A Jokinen](https://pasiaj.com/)
+## [Peruskoulun opetussuunnitelma taitopuuna](https://pasiaj.github.io/taitopuu/)
 
-Opetussuunnitelmat taitopuina, Path of Exile -pelin tyyliin.
+- [Mitä peruskoulussa oikeastaan opitaan? Esittely](https://pasiaj.github.io/taitopuu/peruskoulu/esittely/)
+- [Peruskoulu Path of Exile -taitopuuna](https://pasiaj.github.io/taitopuu/peruskoulu/)
+- [Peruskoulu oppiaineittain](https://pasiaj.github.io/taitopuu/peruskoulu/?jarjestys=oppiaineet) ja [laaja-alaisen osaamisen mukaan](https://pasiaj.github.io/taitopuu/peruskoulu/?jarjestys=laaja-alaiset)
+- [Peruskoulu Diablo II -versiona](https://pasiaj.github.io/taitopuu/peruskoulu/diablo/)
+- [Peruskoulu Duolingon vinkkelistä](https://pasiaj.github.io/taitopuu/peruskoulu/duolingo/)
+- [Peruskoulu Minecraft-näkymänä](https://pasiaj.github.io/taitopuu/peruskoulu/minecraft/)
+- [Peruskoulu Skyrimin tähtikuvioina](https://pasiaj.github.io/taitopuu/peruskoulu/skyrim/)
 
-**Peruskoulu:** <https://pasiaj.com/taitopuu/peruskoulu/>, esittely
-<https://pasiaj.com/taitopuu/peruskoulu/esittely/>, Diablo II -näkymä
-<https://pasiaj.com/taitopuu/peruskoulu/diablo/>, Duolingo-näkymä
-<https://pasiaj.com/taitopuu/peruskoulu/duolingo/>, Minecraft-näkymä
-<https://pasiaj.com/taitopuu/peruskoulu/minecraft/>, Skyrim-näkymä
-<https://pasiaj.com/taitopuu/peruskoulu/skyrim/>
-
-Sama sivusto GitHub Pagesissa: <https://pasiaj.github.io/taitopuu/>
+Tekijä: [Pasi A Jokinen](https://pasiaj.com/). Sama sivusto on myös [pasiaj.comissa](https://pasiaj.com/taitopuu/).
 
 Kaikki, mitä huippuoppilas osaa peruskoulun päättyessä, taitoina eikä
 oppiaineina. Puussa on 18 osaamisaluetta, 134 aihetta, 617 osataitoa ja

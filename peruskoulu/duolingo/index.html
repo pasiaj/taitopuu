@@ -318,7 +318,7 @@ button { font: inherit; }
       h += `</div></div>`;
     });
     if (!units.length) h = '<p class="small">Tällä kurssilla ei ole luokkiin sidottuja käsitteitä.</p>';
-    $('path').innerHTML = h + '<p class="small" style="text-align:center;margin-top:40px" data-katso></p>';
+    $('path').innerHTML = h + '<p class="small" style="text-align:center;margin-top:40px" data-katso></p><p class="small" style="text-align:center" data-byline></p>';
     if (window.katsoMyos) window.katsoMyos();
     $('path').querySelectorAll('.node').forEach(b => b.onclick = e => { e.stopPropagation(); openPop(+b.dataset.i, b); });
     $('path').querySelectorAll('[data-guide]').forEach(b => b.onclick = () => openGuide(units[+b.dataset.guide]));
@@ -333,7 +333,7 @@ button { font: inherit; }
     if (area.h) h += `<div class="small" style="margin-top:10px">Polun päässä: ${esc(area.h)}</div>`;
     h += `</div>`;
     h += `<div class="card"><h4>Mikä tämä on?</h4><div class="small">Peruskoulun opetussuunnitelma (POPS 2014) oppimispolkuna. Jokainen yksikkö on yksi luokka, ja jokainen pallo on taito, jonka käsitteitä sillä luokalla opitaan. Oppitunnin kysymykset tulevat taitopuun käsitteistä ja niiden kuvauksista. Edistyminen tallentuu vain tähän selaimeen.</div></div>`;
-    h += `<div class="small" data-katso></div>`;
+    h += `<div class="small" data-katso></div><div class="small" data-byline style="margin-top:8px"></div>`;
     $('side').innerHTML = h;
     if (window.katsoMyos) window.katsoMyos();
   }

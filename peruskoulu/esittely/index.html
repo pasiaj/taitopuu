@@ -103,6 +103,7 @@ body.kuva #skip, body.kuva #nav, body.kuva #hud { display: none !important; }
     <h1>Mitä peruskoulussa oikeastaan opitaan?</h1>
     <p>Peruskoulun opetussuunnitelma on satoja sivuja tekstiä. Jaottelin sen taidoiksi ja piirsin niistä pelin taitopuun: kartan kaikesta, mitä huippuoppilas osaa, kun peruskoulu loppuu.</p>
     <button class="btn gold" id="start">Aloita kierros</button>
+    <p style="margin:18px auto 0;font-size:14px;color:var(--muted)">Pasi A Jokinen · <a href="https://pasiaj.com/" rel="author" style="color:var(--muted)">pasiaj.com</a></p>
     <p style="margin-top:28px;font-size:14px"><span data-katso></span></p>
   </div>
 </div>
@@ -304,7 +305,7 @@ body.kuva #skip, body.kuva #nav, body.kuva #hud { display: none !important; }
         • <span class="b">katkoviivat</span> näyttävät, mitä taito vaatii<br>
         • <span class="k">luokkasäädin</span> näyttää, mitä missäkin vaiheessa osataan<br>
         • <span class="k">Järjestä</span>-valinta näyttää saman puun oppiaineittain tai laaja-alaisittain</p>
-        <p><a class="btn gold" href="../">Avaa taitopuu →</a></p><p style="font-size:13px;color:var(--muted)"><span data-katso></span></p>`,
+        <p><a class="btn gold" href="../">Avaa taitopuu →</a></p><p style="font-size:13px;color:var(--muted)"><span data-katso></span></p><p style="font-size:13px;color:var(--muted);margin-top:4px">Tekijä: <a href="https://pasiaj.com/" rel="author" style="color:var(--muted)">Pasi A Jokinen</a></p>`,
       go() {
         V.sel = null; V.focus = null; V.grade = 10; V.dirty = true; V.o.crossLinks = true;
         V.flyTo(shift(V.fitAll(0.95)), 1600); hud('', '');
