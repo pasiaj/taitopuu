@@ -67,7 +67,6 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
 #intro .byl { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 2px auto 22px; font: 600 13px/1 Cinzel, Georgia, serif; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); opacity: .9; text-shadow: 0 0 10px #000, 0 0 3px #000; }
 #intro .byl::before, #intro .byl::after { content: ""; width: 42px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); opacity: .6; }
 #intro .byl::after { transform: scaleX(-1); }
-#intro .byl span { opacity: .5; }
 #intro .byl a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(217,180,92,.35); }
 #intro .byl a:hover { color: var(--gold-2); border-bottom-color: var(--gold-2); }
 #intro p { color: var(--muted); max-width: 560px; margin: 0 auto 26px; font-size: 17px; }
@@ -108,7 +107,7 @@ body.kuva #skip, body.kuva #nav, body.kuva #hud { display: none !important; }
 <div id="intro">
   <div>
     <h1>Mitä peruskoulussa oikeastaan opitaan?</h1>
-    <div class="byl">Pasi A Jokinen <span>·</span> <a href="https://pasiaj.com/" rel="author">pasiaj.com</a></div>
+    <div class="byl"><a href="https://pasiaj.com/" rel="author">Pasi A Jokinen</a></div>
     <p>Peruskoulun opetussuunnitelma on satoja sivuja tekstiä. Jaottelin sen taidoiksi ja piirsin niistä pelin taitopuun: kartan kaikesta, mitä huippuoppilas osaa, kun peruskoulu loppuu.</p>
     <button class="btn gold" id="start">Aloita kierros</button>
     <p style="margin-top:28px;font-size:14px"><span data-katso></span></p>
