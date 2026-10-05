@@ -1,5 +1,7 @@
 # Taitopuu
 
+Tekijä: [Pasi A Jokinen](https://pasiaj.com/)
+
 Opetussuunnitelmat taitopuina, Path of Exile -pelin tyyliin.
 
 **Peruskoulu:** <https://pasiaj.com/taitopuu/peruskoulu/>, esittely
@@ -42,6 +44,7 @@ tavoitteista, sisältöalueista ja arviointikriteereistä vuosiluokilla 1–2,
 | `peruskoulu/puu.js` | Asettelu ja piirto, yhteinen molemmille |
 | `peruskoulu/data.js` | Puun data (generoitu) |
 | `tools/peruskoulu-data.py` | Rakentaa `data.js`:n taitopuun korteista |
+| `tools/meta.py` | Kirjoittaa kaikkien sivujen metatagit (kuvaus, tekijä, kanoninen osoite, Open Graph, Twitter-kortti, favicon). Some-kuva `peruskoulu/kuvat/some.jpg` on otettu esittelyn aloitusruudusta (`esittely/?kuva`, 1200 × 630). |
 | `tools/julkaise.sh` | Kopioi sivun xpostiin (pasiaj.com) |
 
 Sivu toimii suoraan tiedostona: avaa `peruskoulu/index.html` selaimessa.

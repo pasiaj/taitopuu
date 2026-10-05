@@ -24,7 +24,8 @@
       .map(([p, n]) => `<a href="${base}${p}">${n}</a>`);
     links.push('<a href="https://github.com/pasiaj/taitopuu" target="_blank" rel="noopener">GitHub</a>');
     el.classList.add('katso');
-    el.innerHTML = 'Katso myös: ' + links.join(' · ');
+    el.innerHTML = 'Katso myös: ' + links.join(' · ') +
+      ' <span style="white-space:nowrap">· Tekijä: <a href="https://pasiaj.com/" rel="author">Pasi A Jokinen</a></span>';
   }
   const run = () => document.querySelectorAll('[data-katso]').forEach(fill);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();

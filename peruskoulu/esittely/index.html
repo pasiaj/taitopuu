@@ -3,7 +3,32 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Taitopuun esittely</title>
+<title>Mitä peruskoulussa oikeastaan opitaan?</title>
+<!-- meta:alku (tools/meta.py) -->
+<meta name="description" content="Kymmenen vaiheen kierros peruskoulun taitopuuhun: käsitteistä taidoiksi, taidoista osaamisalueiksi ja luokka luokalta huipputasolle. Opetussuunnitelma satojen sivujen sijaan yhtenä karttana.">
+<meta name="author" content="Pasi A Jokinen">
+<link rel="author" href="https://pasiaj.com/">
+<link rel="canonical" href="https://pasiaj.github.io/taitopuu/peruskoulu/esittely/">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#07080b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307080b'/%3E%3Cg stroke='%23d9b45c' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M32 32 14 16M32 32 50 16M32 32 12 40M32 32 52 40M32 32 32 54'/%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='7' fill='%23f1d27a'/%3E%3Cg fill='%2358cc02'%3E%3Ccircle cx='14' cy='16' r='4'/%3E%3Ccircle cx='50' cy='16' r='4'/%3E%3Ccircle cx='12' cy='40' r='4'/%3E%3Ccircle cx='52' cy='40' r='4'/%3E%3Ccircle cx='32' cy='54' r='4'/%3E%3C/g%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Taitopuu">
+<meta property="og:locale" content="fi_FI">
+<meta property="og:title" content="Mitä peruskoulussa oikeastaan opitaan?">
+<meta property="og:description" content="Kymmenen vaiheen kierros peruskoulun taitopuuhun: käsitteistä taidoiksi, taidoista osaamisalueiksi ja luokka luokalta huipputasolle. Opetussuunnitelma satojen sivujen sijaan yhtenä karttana.">
+<meta property="og:url" content="https://pasiaj.github.io/taitopuu/peruskoulu/esittely/">
+<meta property="og:image" content="https://pasiaj.github.io/taitopuu/peruskoulu/kuvat/some.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Otsikko &quot;Mitä peruskoulussa oikeastaan opitaan?&quot; peruskoulun taitopuun päällä: 18 osaamisaluetta säteittäisinä haaroina.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mitä peruskoulussa oikeastaan opitaan?">
+<meta name="twitter:description" content="Kymmenen vaiheen kierros peruskoulun taitopuuhun: käsitteistä taidoiksi, taidoista osaamisalueiksi ja luokka luokalta huipputasolle. Opetussuunnitelma satojen sivujen sijaan yhtenä karttana.">
+<meta name="twitter:image" content="https://pasiaj.github.io/taitopuu/peruskoulu/kuvat/some.jpg">
+<meta name="twitter:image:alt" content="Otsikko &quot;Mitä peruskoulussa oikeastaan opitaan?&quot; peruskoulun taitopuun päällä: 18 osaamisaluetta säteittäisinä haaroina.">
+<!-- meta:loppu -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -46,6 +71,8 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
 #gh { position: fixed; top: 16px; left: 178px; font-size: 13px; padding: 7px 12px; z-index: 5; }
 #auto.on { border-color: var(--gold); color: var(--gold-2); }
 
+/* ?kuva: aloitusruutu ilman reunan painikkeita (some-kuvaa varten) */
+body.kuva #skip, body.kuva #nav, body.kuva #hud { display: none !important; }
 @media (max-width: 760px) {
   #card { left: 12px; right: 12px; width: auto; bottom: 76px; padding: 16px 18px; max-height: 46vh; overflow: auto; }
   #card h2 { font-size: 21px; }
@@ -86,13 +113,15 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
 <script>
 (function () {
   'use strict';
+  if (new URLSearchParams(location.search).has('kuva')) document.body.classList.add('kuva');
   const M = Puu.build(window.TAITOPUU);
   const V = new Puu.View(document.getElementById('cv'), M, { crossLinks: false });
   window.addEventListener('resize', () => V.resize());
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const all = V.fitAll(0.92);
-  V.cam = { x: 0, y: 0, z: all.z * 0.6 };
+  const KUVA = document.body.classList.contains('kuva');
+  V.cam = { x: 0, y: 0, z: all.z * (KUVA ? 1.25 : 0.6) };
   V.grade = 10; V.focus = new Set([M.root]);
 
   const N = M.nodes, A = M.areas;
@@ -318,6 +347,7 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
   let spin = 0;
   const idle = setInterval(() => {
     if ($('intro').classList.contains('gone')) { clearInterval(idle); V.o.crossLinks = false; return; }
+    if (KUVA) return;   // kuvatilassa puu pysyy paikallaan
     spin += 0.004; V.cam.x = Math.cos(spin) * 300; V.cam.y = Math.sin(spin) * 300; V.dirty = true;
   }, 30);
 })();
