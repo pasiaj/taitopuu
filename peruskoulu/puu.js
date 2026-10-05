@@ -556,17 +556,15 @@
       : mode === 'laaja' ? `${k} ${LAAJA[k]}` : OPPIAINEET[k] || k;
     const groups = mode === 'laaja' ? [['Laaja-alainen osaaminen', ['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'NONE']]] : SUBJ_GROUPS;
     const branches = new Map(), clusters = new Map(), out = [];
+    // Rypäs = alkuperäinen aihe molemmissa järjestyksissä. Aiheessa on enintään
+    // kuusi taitoa ja aiheiden nimet ovat yksilöllisiä, joten ryppäitä ei pilkota
+    // eikä numeroida. Aiheen nimi kertoo, mitä rypäs sisältää.
     const clusterFor = (k, n) => {
       const bid = 'B:' + k;
       if (!branches.has(bid)) branches.set(bid, { id: bid, t: 3, a: bid, n: name(k), key: k, mode });
-      // rypäs: oppiaineissa alkuperäinen aihe, laaja-alaisissa alkuperäinen osaamisalue; enintään 8 taitoa
-      const base = mode === 'laaja' ? by.get(n.a) : by.get(n.p);
-      let part = 0;
-      while (clusters.has(`${bid}|${base.id}#${part}`) && clusters.get(`${bid}|${base.id}#${part}`).size >= 8) part++;
-      const key = `${bid}|${base.id}#${part}`;
-      if (!clusters.has(key)) clusters.set(key, { size: 0, node: { id: `C:${k}:${base.id}${part ? '.' + (part + 1) : ''}`, t: 2, a: bid, p: bid, n: base.n + (part ? ` (${part + 1})` : ''), k: base.k, orig: base.id } });
-      const c = clusters.get(key); c.size++;
-      return c.node;
+      const base = by.get(n.p), key = bid + '|' + base.id;
+      if (!clusters.has(key)) clusters.set(key, { node: { id: `C:${k}:${base.id}`, t: 2, a: bid, p: bid, n: base.n, k: base.k, orig: base.id } });
+      return clusters.get(key).node;
     };
     const homeOf = new Map();
     os.forEach(n => {

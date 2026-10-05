@@ -234,7 +234,9 @@ ul.lst small { color: var(--faint); }
     const chain = []; let c = n.p && M.byId.get(n.p);
     while (c) { chain.unshift(c); c = c.p && M.byId.get(c.p); }
     let h = `<button class="close" aria-label="Sulje">×</button>`;
-    h += `<div class="kind">${Puu.TYYPIT[n.t]} · ${esc(n.id)}${n._s && n.t <= 1 ? ` · ${n.t === 0 ? '' : 'alkaa '}${n._s}. luokalla` : ''}</div>`;
+    const kindName = n.key ? (n.mode === 'laaja' ? 'Laaja-alainen osaaminen' : 'Oppiaine') : Puu.TYYPIT[n.t];
+    const showId = !(n.key || (n.orig && n.t === 2)) ? ` · ${esc(n.home || n.id)}` : '';
+    h += `<div class="kind">${kindName}${showId}${n._s && n.t <= 1 ? ` · ${n.t === 0 ? '' : 'alkaa '}${n._s}. luokalla` : ''}</div>`;
     h += `<h2>${esc(n.n)}</h2>`;
     if (chain.length) h += `<div class="crumbs">${chain.map(ref).join(' › ')}</div>`;
     const tags = [];
@@ -249,7 +251,11 @@ ul.lst small { color: var(--faint); }
     if (n.dup) h += `<p style="font-size:12.5px;color:var(--muted)">Katkoviivakehys: taidon kotipaikka on haarassa <a class="lnk" data-id="${esc(n.home)}">${esc((M.byId.get(n.homeBranch) || {}).n || '')}</a>, jossa ovat myös sen käsitteet.</p>`;
     if (n.t === 3 && n.key) {
       const all = M.nodes.filter(x => x.t === 1 && x.a === n.id), homeN = all.filter(x => !x.dup).length;
-      h += `<p>${n.mode === 'laaja' ? 'Laaja-alainen osaaminen' : 'Oppiaine'}: ${all.length} taitoa. Niistä ${homeN} on kotipaikassaan tässä haarassa, ja ${all.length - homeN} on kopioita, joiden kotipaikka on toisessa haarassa.</p>`;
+      const shared = all.length - homeN, where = n.mode === 'laaja' ? 'laaja-alaisessa osaamisessa' : 'aineessa';
+      h += `<p>${all.length} taitoa. ` + (homeN === 0
+        ? `Kaikki ne kuuluvat myös toiseen ${where}, jossa ovat niiden käsitteet (katkoviivakehys).`
+        : shared === 0 ? 'Kaikki ovat tämän haaran omia.'
+        : `${homeN} on tämän haaran omia. ${shared} kuuluu myös toiseen ${where}, jossa ovat niiden käsitteet (katkoviivakehys).`) + `</p>`;
     }
     if (n.k) h += `<p>${esc(n.k)}</p>`;
     if (n.o) h += `<p><b>Osaat, kun:</b> ${esc(n.o)}</p>`;
