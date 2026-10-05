@@ -5,71 +5,74 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Peruskoulun tähtikuviot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-/* Skyrim-henkinen taitotaivas: tähtikuviot yötaivaalla, ohut kondensoitu teksti. */
-:root { --text: #f2efe6; --muted: #a9a59a; --faint: #6f6c64; --line: rgba(255,255,255,.35); --glow: #bfe3ff; }
+/* Skyrim-henkinen taitotaivas. Kaikki taivas ja tähdet piirretään canvasille; teksti on HTML:ää. */
+:root { --text: #f4f1e8; --muted: #b3ada0; --faint: #77736a; }
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; overflow: hidden; background: #02030a; color: var(--text); font: 300 18px/1.35 "Barlow Condensed", "Arial Narrow", sans-serif; letter-spacing: .03em; }
-#sky { position: fixed; inset: 0; width: 100%; height: 100%; }
-#stage { position: fixed; left: 0; right: 0; top: 64px; bottom: 210px; }
-#con { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; transition: opacity .45s; }
-#con.fade { opacity: 0; }
-.star { cursor: pointer; }
-.lab { font: 400 15px "Barlow Condensed", sans-serif; letter-spacing: .12em; text-transform: uppercase; fill: var(--muted); pointer-events: none; }
-.lab.ai { fill: #d9d4c4; font-size: 14px; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #010208; color: var(--text); font: 300 18px/1.3 "Barlow Condensed", "Arial Narrow", sans-serif; letter-spacing: .04em; -webkit-font-smoothing: antialiased; }
+canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.sh { text-shadow: 0 0 8px rgba(0,0,0,.9), 0 0 2px #000; }
+.caps { text-transform: uppercase; letter-spacing: .18em; }
 
-/* yläpalkki */
-#top { position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; background: linear-gradient(rgba(0,0,0,.7), transparent); z-index: 4; flex-wrap: wrap; }
+/* yläpalkki: hahmon taso = luokka */
+#top { position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-start; padding: 18px 26px; pointer-events: none; z-index: 3; }
+#top > * { pointer-events: auto; }
 #lvl { display: flex; align-items: center; gap: 14px; }
-#lvl .n { font-size: 26px; font-weight: 400; letter-spacing: .16em; text-transform: uppercase; }
-#lvl .bar { width: 220px; height: 8px; border: 1px solid rgba(255,255,255,.45); padding: 1px; }
-#lvl .bar i { display: block; height: 100%; background: linear-gradient(90deg, #8fb9d8, #e8f4ff); }
-#lvl button { background: none; border: 1px solid rgba(255,255,255,.35); color: var(--text); font: inherit; font-size: 20px; width: 34px; height: 34px; cursor: pointer; }
+#lvl .n { font-size: 24px; font-weight: 400; white-space: nowrap; }
+#lvl .bar { width: 230px; height: 7px; border: 1px solid rgba(255,255,255,.55); padding: 1px; }
+#lvl .bar i { display: block; height: 100%; background: linear-gradient(90deg, #9cc0de, #f1f8ff); transition: width .4s; }
+#lvl button { background: rgba(0,0,0,.25); border: 1px solid rgba(255,255,255,.35); color: var(--text); font: inherit; font-size: 20px; width: 32px; height: 32px; cursor: pointer; line-height: 1; }
 #lvl button:hover { border-color: #fff; }
-.views { display: flex; gap: 18px; flex-wrap: wrap; }
-.views a { color: var(--muted); text-decoration: none; text-transform: uppercase; letter-spacing: .14em; font-size: 15px; }
-.views a:hover, .views a.on { color: #fff; }
+#newp { font-size: 17px; color: var(--muted); text-align: right; }
+#newp b { color: var(--text); font-weight: 400; font-size: 22px; margin-left: 6px; }
 
-/* alapalkki: taitokaruselli ja perkin tiedot */
-#bottom { position: fixed; left: 0; right: 0; bottom: 0; height: 210px; z-index: 4; background: linear-gradient(transparent, rgba(0,0,0,.85) 35%); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 14px; }
-#perk { text-align: center; min-height: 92px; max-width: 760px; padding: 0 16px; }
-#perk .t { font-size: 26px; font-weight: 400; letter-spacing: .14em; text-transform: uppercase; }
-#perk .t small { font-size: 18px; color: var(--muted); letter-spacing: .08em; }
-#perk .d { font-size: 18px; color: var(--text); margin-top: 2px; }
-#perk .r { font-size: 16px; color: var(--muted); margin-top: 3px; }
-#perk .r b { color: #e8c37a; font-weight: 400; }
-#perk a { color: var(--glow); }
-#ring { position: relative; width: 100%; height: 72px; margin-top: 8px; overflow: hidden; }
-#ring button { position: absolute; top: 0; transform: translateX(-50%); background: none; border: 0; color: var(--text); font: inherit; cursor: pointer; text-transform: uppercase; letter-spacing: .14em; white-space: nowrap; transition: left .45s, opacity .45s, font-size .45s; text-align: center; }
-#ring button .lv { display: block; font-size: 15px; color: var(--muted); letter-spacing: .1em; }
-#ring button .pb { display: block; height: 4px; margin: 4px auto 0; width: 110px; border: 1px solid rgba(255,255,255,.35); padding: 1px; }
-#ring button .pb i { display: block; height: 100%; background: #dfeefb; }
-#hint { position: fixed; right: 18px; bottom: 12px; font-size: 13px; color: var(--faint); z-index: 5; letter-spacing: .08em; text-align: right; }
-#hint a { color: var(--muted); }
-#mkatso { display: none; }
-
-@media (max-width: 700px) {
-  #stage { top: 96px; bottom: 230px; }
-  #lvl .bar { width: 110px; }
-  #lvl .n { font-size: 20px; }
-  #perk .t { font-size: 21px; }
-  #perk .d { font-size: 16px; }
-  #bottom { height: 230px; }
-  #hint { display: none; }
-  #mkatso { display: block; text-align: center; font-size: 13px; color: var(--faint); margin-top: 4px; }
-  #mkatso a { color: var(--muted); }
+/* alapalkki: taidot karusellina ja taidon/perkin tiedot */
+#bottom { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none; padding-bottom: 16px; }
+#bottom > * { pointer-events: auto; }
+#info { margin: 0 auto 12px; width: min(760px, calc(100% - 24px)); text-align: center; min-height: 88px; display: flex; flex-direction: column; justify-content: flex-end; }
+#info .box { background: linear-gradient(rgba(0,0,0,.0), rgba(0,0,0,.55) 25%, rgba(0,0,0,.55) 75%, rgba(0,0,0,0)); padding: 10px 18px; border-top: 1px solid rgba(255,255,255,.18); border-bottom: 1px solid rgba(255,255,255,.18); }
+#info .t { font-size: 24px; font-weight: 400; }
+#info .t small { color: var(--muted); font-size: 17px; letter-spacing: .1em; }
+#info .d { font-size: 18px; margin-top: 4px; }
+#info .r { font-size: 16px; color: var(--muted); margin-top: 5px; }
+#info .r b { color: #ecd39a; font-weight: 400; }
+#info a { color: #cfe6ff; }
+#ring { position: relative; height: 70px; }
+#ring .sk { position: absolute; top: 0; transform: translateX(-50%); background: none; border: 0; color: var(--text); font: inherit; cursor: pointer; white-space: nowrap; text-align: center; transition: left .5s ease, opacity .5s, font-size .5s; padding: 0 6px; }
+#ring .sk .lv { display: block; font-size: 16px; color: var(--muted); margin-top: 1px; }
+#ring .sk .pb { display: block; width: 150px; height: 5px; margin: 5px auto 0; border: 1px solid rgba(255,255,255,.45); padding: 1px; }
+#ring .sk .pb i { display: block; height: 100%; background: #e8f3ff; }
+#look { position: fixed; left: 50%; transform: translateX(-50%); top: 20px; z-index: 3; background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.35); color: var(--text); font: inherit; font-size: 15px; padding: 5px 14px; cursor: pointer; }
+#look:hover { border-color: #fff; }
+#katso { position: fixed; right: 18px; bottom: 10px; z-index: 4; font-size: 13px; color: var(--faint); text-align: right; }
+#katso a { color: var(--muted); }
+#keys { position: fixed; left: 18px; bottom: 10px; z-index: 4; font-size: 13px; color: var(--faint); }
+@media (max-width: 760px) {
+  #top { padding: 12px 12px; }
+  #lvl .bar { width: 100px; }
+  #lvl .n { font-size: 19px; }
+  #newp { font-size: 13px; max-width: 120px; } #newp b { font-size: 18px; display: block; }
+  #lvl { gap: 8px; }
+  #info .t { font-size: 20px; } #info .d { font-size: 16px; }
+  #ring .sk .pb { width: 110px; }
+  #keys { display: none; }
+  #katso { left: 10px; right: 10px; text-align: center; bottom: 4px; font-size: 12px; }
+  #bottom { padding-bottom: 26px; }
+  #look { top: 56px; }
 }
 </style>
 </head>
 <body>
-<canvas id="sky"></canvas>
+<canvas id="cv" aria-label="Taitojen tähtikuviot"></canvas>
 <div id="top">
-  <div id="lvl"><button id="gm" aria-label="Edellinen luokka">‹</button><span class="n" id="gn"></span><span class="bar"><i id="gb"></i></span><button id="gp" aria-label="Seuraava luokka">›</button></div>
+  <div id="lvl" class="sh"><button id="gm" aria-label="Edellinen luokka">−</button><span class="n caps" id="gn"></span><span class="bar"><i id="gb"></i></span><button id="gp" aria-label="Seuraava luokka">+</button></div>
+  <div id="newp" class="sh caps"></div>
 </div>
-<div id="stage"><svg id="con"></svg></div>
-<div id="bottom"><div id="perk"></div><div id="ring"></div><div id="mkatso" data-katso></div></div>
-<div id="hint">← → vaihda taitoa · ↑ ↓ luokka · klikkaa tähteä<br><span data-katso></span></div>
+<button id="look" class="caps sh"></button>
+<div id="bottom"><div id="info" class="sh"></div><div id="ring"></div></div>
+<div id="keys" class="sh">← → käännä taivasta · ↑ katso tähtikuvioon · ↓ takaisin · + − luokka</div>
+<div id="katso" class="sh" data-katso></div>
 
 <script src="../data.js"></script>
 <script src="../katso-myos.js"></script>
@@ -79,234 +82,390 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #02030a; col
   const D = window.TAITOPUU;
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const TAU = Math.PI * 2;
 
-  /* ------------------------------------------------------------- malli */
+  /* ------------------------------------------------------------------ malli */
   const by = new Map(D.nodes.map(n => [n.id, Object.assign({ kids: [] }, n)]));
   const N = [...by.values()];
   N.forEach(n => { if (n.p && by.has(n.p)) by.get(n.p).kids.push(n); });
   N.forEach(n => n.kids.sort((a, b) => a.id.localeCompare(b.id, 'fi', { numeric: true })));
   const AREAS = D.ryhmat.flatMap(g => g.a).map(id => by.get(id));
-  AREAS.forEach((a, i) => { a.hue = i / AREAS.length * 360; a.idx = i; });
+  AREAS.forEach((a, i) => { a.hue = (i / AREAS.length * 360 + 200) % 360; a.idx = i; });
   const start = n => n.s != null ? n.s : n.kids.length ? Math.min(...n.kids.map(start)) : 9;
-  const STAGES = [['1–2', 1], ['3–6', 3], ['7–9', 7]];
   function rng(seed) { let h = 2166136261; for (const c of String(seed)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; }
 
-  // Perkin tasot: POPSin vaiheet, joissa taidolla on kuvaus, ja lopuksi huippu
+  // Perkin tasot = POPSin vaiheet, joissa taidolla on kuvaus, ja huippu
+  const STAGES = [['1–2', 1], ['3–6', 3], ['7–9', 7]];
   function ranks(o) {
+    if (o._r) return o._r;
     const r = STAGES.filter(([k]) => o.tl && o.tl[k]).map(([k, g]) => ({ k, g: Math.max(g, start(o)), text: o.tl[k] }));
-    r.push({ k: 'Huippu', g: 10, text: o.h || '' });
-    return r;
+    r.push({ k: 'huippu', g: 10, text: o.h || o.o || '' });
+    return (o._r = r);
   }
-  const rankAt = (o, g) => g < start(o) ? 0 : ranks(o).filter(r => r.g <= g).length || 1;
-  // Taitotaso 15–100 kuten Skyrimissa: alueen taitojen keskimääräinen eteneminen
+  const rankAt = (o, g) => g < start(o) ? 0 : Math.max(1, ranks(o).filter(r => r.g <= g).length);
   function skillLevel(a, g) {
     const os = a.kids.flatMap(x => x.kids);
-    const p = os.reduce((s, o) => s + rankAt(o, g) / ranks(o).length, 0) / Math.max(1, os.length);
-    return Math.round(15 + 85 * p);
+    return Math.round(15 + 85 * os.reduce((s, o) => s + rankAt(o, g) / ranks(o).length, 0) / Math.max(1, os.length));
   }
 
-  /* --------------------------------------------------------- tähtikuvio */
-  // Aiheet sarakkeina; aiheen tähti alhaalla, sen taidot nousevat ylös luokan mukaan.
-  // Tähti kytkeytyy saman aiheen aiempaan edellytykseensä, muuten aiheen tähteen.
+  /* ---------------------------------------------------- tähtikuvion asettelu */
+  // Puu: alue (juuri, alhaalla) → aiheet → osataidot, osataito saman aiheen aiemman
+  // edellytyksensä jatkeena. Voima-asettelu: jouset puun viivoilla, poistovoima
+  // tähtien välillä ja nostovoima luokan mukaan, jotta kuvio kasvaa ylöspäin.
+  const SPACING = 1500;             // tähtikuvioiden etäisyys taivaalla (maailman yksiköissä)
   function constellation(a) {
-    const r = rng(a.id), cols = a.kids.length, pts = [], links = [];
-    const W = 1000, H = 600, x0 = 70, x1 = 930;
-    a.kids.forEach((ai, ci) => {
-      const cx = cols === 1 ? 500 : x0 + (x1 - x0) * ci / (cols - 1);
-      const base = { n: ai, x: cx + (r() - .5) * 30, y: H - 40 - (ci % 2) * 26, kind: 'ai' };
-      pts.push(base);
-      const os = ai.kids.slice().sort((p, q) => start(p) - start(q));
+    if (a._c) return a._c;
+    const r = rng('tk' + a.id);
+    const nodes = [], edges = [];
+    const root = { n: a, kind: 'root', x: 0, y: 0, fixed: true };
+    nodes.push(root);
+    const K = a.kids.length;
+    a.kids.forEach((ai, i) => {
+      const ang = -Math.PI / 2 + ((K === 1 ? .5 : i / (K - 1)) - .5) * 2.9;
+      const an = { n: ai, kind: 'ai', x: Math.cos(ang) * 210, y: Math.sin(ang) * 170, ang };
+      nodes.push(an); edges.push([root, an, 210]);
       const placed = new Map();
-      const sameRow = {};
-      os.forEach(o => {
-        const g = start(o);
-        const k = (sameRow[g] = (sameRow[g] || 0) + 1) - 1;
-        const spread = Math.min(70, (x1 - x0) / cols * .42);
-        const dx = (k % 2 ? 1 : -1) * Math.ceil(k / 2) * spread * .8 + (r() - .5) * 26;
-        const y = H - 110 - (g - 1) / 8 * (H - 170) - k * 14 + (r() - .5) * 22;
-        const p = { n: o, x: cx + dx, y, kind: 'os' };
-        pts.push(p); placed.set(o.id, p);
-        const pre = (o.e || []).map(id => placed.get(id)).filter(Boolean).sort((u, v) => v.y - u.y);
-        links.push([pre.length ? pre[pre.length - 1] : base, p]);
-        pre.slice(0, -1).forEach(q => { if (Math.abs(q.x - p.x) < 220) links.push([q, p, true]); });
+      ai.kids.slice().sort((p, q) => start(p) - start(q)).forEach((o, j) => {
+        const pre = (o.e || []).map(id => placed.get(id)).filter(Boolean);
+        const par = pre.length ? pre.sort((u, v) => start(v.n) - start(u.n))[0] : an;
+        const p = { n: o, kind: 'os', x: par.x + Math.cos(an.ang) * 60 + (r() - .5) * 70, y: par.y + Math.sin(an.ang) * 60 - r() * 30, par };
+        nodes.push(p); placed.set(o.id, p); edges.push([par, p, 82]);
       });
     });
-    return { pts, links, W, H };
-  }
-
-  /* ------------------------------------------------------------------ tila */
-  const st = { ai: 0, grade: 10, sel: null };
-  let C = null;
-
-  function renderCon() {
-    const a = AREAS[st.ai], g = st.grade;
-    C = constellation(a);
-    const svg = $('con');
-    svg.setAttribute('viewBox', `0 0 ${C.W} ${C.H}`);
-    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-    let h = `<defs><radialGradient id="sg"><stop offset="0" stop-color="#fff" stop-opacity="1"/><stop offset=".25" stop-color="#d8eeff" stop-opacity=".9"/><stop offset="1" stop-color="#8fc8ff" stop-opacity="0"/></radialGradient>
-      <filter id="bl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2"/></filter></defs>`;
-    C.links.forEach(([p, q, weak]) => {
-      const on = (p.kind === 'ai' || rankAt(p.n, g) > 0) && rankAt(q.n, g) > 0;
-      h += `<line x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}" stroke="${on ? 'rgba(235,245,255,.75)' : 'rgba(255,255,255,.16)'}" stroke-width="${weak ? .8 : on ? 1.6 : 1.1}" ${weak ? 'stroke-dasharray="3 5"' : ''}/>`;
-    });
-    C.pts.forEach((p, i) => {
-      const o = p.n;
-      if (p.kind === 'ai') {
-        const any = o.kids.some(k => rankAt(k, g) > 0);
-        h += `<g class="star" data-i="${i}"><circle cx="${p.x}" cy="${p.y}" r="22" fill="url(#sg)" opacity="${any ? .55 : .15}"/><circle cx="${p.x}" cy="${p.y}" r="${any ? 4.5 : 3}" fill="${any ? '#fff' : '#8d8b86'}"/><circle cx="${p.x}" cy="${p.y}" r="16" fill="transparent"/>
-          <text class="lab ai" x="${p.x}" y="${p.y + 30}" text-anchor="middle">${esc(shortName(o.n))}</text></g>`;
-        return;
+    const gy = n => n.kind === 'os' ? -230 - (start(n.n) - 1) * 38 : n.kind === 'ai' ? -150 : 0;
+    for (let it = 0; it < 520; it++) {
+      const cool = 1 - it / 520;
+      nodes.forEach(n => { n.fx = 0; n.fy = 0; });
+      for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+        const A = nodes[i], B = nodes[j]; let dx = B.x - A.x, dy = B.y - A.y; const d2 = dx * dx + dy * dy + .01, d = Math.sqrt(d2);
+        if (d > 320) continue;
+        const f = 5200 / d2; dx /= d; dy /= d;
+        A.fx -= dx * f; A.fy -= dy * f; B.fx += dx * f; B.fy += dy * f;
       }
-      const rk = rankAt(o, g), max = ranks(o).length, on = rk > 0, full = rk >= max;
-      const sel = st.sel === o;
-      const tw = (i * 37 % 10) / 10;
-      h += `<g class="star" data-i="${i}">`;
-      if (on) h += `<circle cx="${p.x}" cy="${p.y}" r="${16 + rk * 4}" fill="url(#sg)" opacity="${.35 + .5 * rk / max}"><animate attributeName="opacity" values="${.3 + .4 * rk / max};${.5 + .5 * rk / max};${.3 + .4 * rk / max}" dur="${3 + tw * 3}s" repeatCount="indefinite"/></circle>`;
-      if (full) h += `<circle cx="${p.x}" cy="${p.y}" r="9" fill="none" stroke="rgba(255,236,190,.8)" stroke-width="1"/>`;
-      h += `<circle cx="${p.x}" cy="${p.y}" r="${on ? 2.8 + rk * .7 : 2.2}" fill="${on ? '#fff' : '#57565a'}" stroke="${on ? 'none' : 'rgba(255,255,255,.35)'}" stroke-width=".8"/>`;
-      if (sel) h += `<circle cx="${p.x}" cy="${p.y}" r="14" fill="none" stroke="#fff" stroke-width="1.2" filter="url(#bl)"/><circle cx="${p.x}" cy="${p.y}" r="13" fill="none" stroke="#fff" stroke-width=".8"/>`;
-      h += `<circle cx="${p.x}" cy="${p.y}" r="14" fill="transparent"/>`;
-      if (sel) h += `<text class="lab" x="${p.x}" y="${p.y - 22}" text-anchor="middle" style="fill:#fff">${esc(o.n)}</text>`;
-      h += `</g>`;
+      edges.forEach(([A, B, L]) => {
+        let dx = B.x - A.x, dy = B.y - A.y; const d = Math.hypot(dx, dy) || .01, f = (d - L) * .06;
+        dx /= d; dy /= d; A.fx += dx * f; A.fy += dy * f; B.fx -= dx * f; B.fy -= dy * f;
+      });
+      nodes.forEach(n => {
+        if (n.fixed) return;
+        n.fy += (gy(n) - n.y) * .012;          // kasvu ylöspäin luokan mukaan
+        n.fx += -n.x * .0018;                 // pysyy kasassa
+        const m = Math.min(9, Math.hypot(n.fx, n.fy)) / (Math.hypot(n.fx, n.fy) || 1);
+        n.x += n.fx * m * (.4 + cool); n.y += n.fy * m * (.4 + cool);
+      });
+    }
+    // skaalaus: kuvio mahtuu noin 720 × 560 alueeseen, juuri alhaalla keskellä
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    nodes.forEach(n => { x0 = Math.min(x0, n.x); x1 = Math.max(x1, n.x); y0 = Math.min(y0, n.y); y1 = Math.max(y1, n.y); });
+    const s = Math.min(980 / (x1 - x0 || 1), 640 / (y1 - y0 || 1), 1.6);
+    nodes.forEach(n => { n.x = (n.x - (x0 + x1) / 2) * s; n.y = (n.y - y1) * s + (y1 - y0) * s / 2; });
+    // sumu: pehmeät pilvet tähtien kohdalle
+    const neb = nodes.filter((_, i) => i % 2 === 0).map(n => ({ x: n.x + (r() - .5) * 60, y: n.y + (r() - .5) * 60, R: 90 + r() * 120 }));
+    return (a._c = { nodes, edges, neb, w: (x1 - x0) * s, h: (y1 - y0) * s });
+  }
+
+  /* ---------------------------------------------------------------- tila */
+  const st = { ai: 0, grade: 10, focus: false, sel: null, hover: null };
+  const cam = { x: 0, y: 0, z: .4, tx: 0, ty: 0, tz: .4 };
+  const W = () => innerWidth, H = () => innerHeight;
+  const overviewZ = () => Math.min(.42, W() / 3600 * 1.15 + .12);
+  function camTarget() {
+    const cx = st.ai * SPACING;
+    if (st.focus) {
+      const c = constellation(AREAS[st.ai]);
+      const top = innerWidth < 760 ? 110 : 80, bot = innerWidth < 760 ? 300 : 330, z = Math.max(innerWidth < 760 ? .2 : .42, Math.min(1.3, (W() - 40) / (c.w + 120), (H() - top - bot) / (c.h + 60)));
+      cam.tz = z; cam.tx = cx; cam.ty = (H() * .42 - (top + (H() - top - bot) / 2)) / z;
+    } else { cam.tz = overviewZ(); cam.tx = cx; cam.ty = 120; }
+  }
+  // kameran x on jatkuva; tähtikuviot toistuvat 18 välein (taivas on lieriö)
+  const wrapX = x => { const T = SPACING * AREAS.length; return ((x % T) + T) % T; };
+
+  /* --------------------------------------------------------- tähtitaivas */
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  const stars = [];
+  (function () { const r = rng('taivas'); for (let i = 0; i < 2600; i++) stars.push({ u: r(), v: r(), z: .25 + r() * .75, s: r() < .02 ? 2 : r() < .15 ? 1.3 : .8, tw: r() * TAU, sp: .6 + r() * 1.6 }); })();
+  // valmiiksi piirretty hehku ja kimallus
+  function sprite(r, col) {
+    const c = document.createElement('canvas'); c.width = c.height = r * 2; const x = c.getContext('2d');
+    const g = x.createRadialGradient(r, r, 0, r, r, r);
+    g.addColorStop(0, `rgba(${col},1)`); g.addColorStop(.12, `rgba(${col},.85)`); g.addColorStop(.35, `rgba(${col},.22)`); g.addColorStop(1, `rgba(${col},0)`);
+    x.fillStyle = g; x.fillRect(0, 0, r * 2, r * 2); return c;
+  }
+  const GLOW = sprite(64, '220,236,255'), GLOW_W = sprite(64, '255,244,214');
+
+  function resize() {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = Math.round(W() * dpr); cv.height = Math.round(H() * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); camTarget();
+  }
+
+  const proj = (wx, wy) => {   // maailma -> ruutu
+    const T = SPACING * AREAS.length;
+    let dx = wx - cam.x; dx -= Math.round(dx / T) * T;
+    return [W() / 2 + dx * cam.z, H() * .42 + (wy - cam.y) * cam.z];
+  };
+  function frame(t) {
+    const time = t / 1000;
+    // kamera liukuu kohti tavoitetta
+    const T = SPACING * AREAS.length;
+    let dx = cam.tx - cam.x; dx -= Math.round(dx / T) * T;
+    cam.x += dx * .07; cam.y += (cam.ty - cam.y) * .07; cam.z *= Math.pow(cam.tz / cam.z, .07);
+    const w = W(), h = H();
+    // taivas
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, '#010208'); g.addColorStop(.55, '#050a19'); g.addColorStop(.85, '#0b1426'); g.addColorStop(1, '#101a2c');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    // revontulimainen hehku taustalla, kiertää taivaan mukana
+    for (let k = 0; k < 3; k++) {
+      const x = ((-cam.x * .08 + k * 900) % 2700 + 2700) % 2700 - 450;
+      const ag = ctx.createRadialGradient(x, h * .25, 0, x, h * .25, 700);
+      ag.addColorStop(0, `hsla(${[170, 200, 260][k]},70%,40%,.07)`); ag.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = ag; ctx.fillRect(x - 700, h * .25 - 700, 1400, 1400);
+    }
+    // tähdet (parallaksi)
+    stars.forEach(s => {
+      const x = ((s.u * 4000 - cam.x * .12 * s.z) % 4000 + 4000) % 4000 - (4000 - w) / 2;
+      if (x < -3 || x > w + 3) return;
+      const a = .25 + .55 * s.z * (.65 + .35 * Math.sin(time * s.sp + s.tw));
+      ctx.fillStyle = `rgba(225,236,255,${a})`;
+      ctx.fillRect(x, s.v * h * .92, s.s, s.s);
     });
-    svg.innerHTML = h;
-    svg.querySelectorAll('.star').forEach(el => {
-      const p = C.pts[+el.dataset.i];
-      el.onmouseenter = () => { if (!st.sel || st.hoverPreview) showPerk(p.n, true); };
-      el.onmouseleave = () => { showPerk(st.sel, false); };
-      el.onclick = e => { e.stopPropagation(); st.sel = p.n; renderCon(); showPerk(p.n, false); };
+    // tähtikuviot
+    const g0 = st.grade;
+    AREAS.forEach((a, i) => {
+      const [ox, oy] = proj(i * SPACING, 0);
+      if (ox < -900 * cam.z - 300 || ox > w + 900 * cam.z + 300) return;
+      const c = constellation(a), cur = i === st.ai;
+      const vis = st.focus ? (cur ? 1 : .12) : (cur ? 1 : .55);
+      const z = cam.z;
+      const P = n => [ox + n.x * z, oy + n.y * z];
+      // sumu alueen värisävyssä
+      ctx.globalCompositeOperation = 'lighter';
+      c.neb.forEach(nb => {
+        const [x, y] = P(nb); const R = nb.R * z;
+        const ng = ctx.createRadialGradient(x, y, 0, x, y, R);
+        ng.addColorStop(0, `hsla(${a.hue},60%,45%,${.055 * vis})`); ng.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = ng; ctx.fillRect(x - R, y - R, R * 2, R * 2);
+      });
+      // viivat
+      c.edges.forEach(([A, B]) => {
+        const on = (A.kind !== 'os' || rankAt(A.n, g0) > 0) && (B.kind !== 'os' || rankAt(B.n, g0) > 0);
+        const [x1, y1] = P(A), [x2, y2] = P(B);
+        ctx.strokeStyle = on ? `rgba(225,238,255,${.55 * vis})` : `rgba(200,210,230,${.14 * vis})`;
+        ctx.lineWidth = on ? 1.4 : 1; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      });
+      // valitun taidon edellytykset muualta aiheesta katkoviivoina
+      if (cur && st.focus && st.sel) {
+        const pn = c.nodes.find(n => n.n === st.sel);
+        (st.sel.e || []).forEach(id => {
+          const q = c.nodes.find(n => n.n.id === id); if (!q || q === pn.par) return;
+          const [x1, y1] = P(q), [x2, y2] = P(pn);
+          ctx.setLineDash([4, 6]); ctx.strokeStyle = 'rgba(236,211,154,.6)'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.setLineDash([]);
+        });
+      }
+      // tähdet
+      c.nodes.forEach((n, k) => {
+        const [x, y] = P(n);
+        let lit, frac;
+        if (n.kind === 'os') { const rk = rankAt(n.n, g0), mx = ranks(n.n).length; lit = rk > 0; frac = rk / mx; }
+        else if (n.kind === 'ai') { lit = n.n.kids.some(o => rankAt(o, g0) > 0); frac = .6; }
+        else { lit = true; frac = 1; }
+        const tw = .85 + .15 * Math.sin(time * (1.1 + (k % 5) * .3) + k);
+        const base = (n.kind === 'root' ? 7 : n.kind === 'ai' ? 4.5 : 2.6 + frac * 2.2) * Math.max(.7, Math.min(1.3, z * 1.1));
+        if (lit) {
+          const R = base * (6 + frac * 4) * tw;
+          ctx.globalAlpha = (.55 + .45 * frac) * vis;
+          ctx.drawImage(frac >= 1 && n.kind === 'os' ? GLOW_W : GLOW, x - R, y - R, R * 2, R * 2);
+          // ristikimallus
+          const L = base * (4 + frac * 7) * tw;
+          ctx.strokeStyle = `rgba(240,248,255,${.5 * vis})`; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(x - L, y); ctx.lineTo(x + L, y); ctx.moveTo(x, y - L); ctx.lineTo(x, y + L); ctx.stroke();
+          ctx.globalAlpha = vis; ctx.fillStyle = '#fff';
+          ctx.beginPath(); ctx.arc(x, y, base * .55, 0, TAU); ctx.fill();
+        } else {
+          ctx.globalAlpha = .7 * vis;
+          ctx.fillStyle = 'rgba(140,145,160,.9)';
+          ctx.beginPath(); ctx.arc(x, y, base * .45, 0, TAU); ctx.fill();
+          ctx.strokeStyle = 'rgba(200,205,220,.35)'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.arc(x, y, base * 1.3, 0, TAU); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        if (cur && st.focus && (st.sel === n.n || st.hover === n.n)) {
+          ctx.globalCompositeOperation = 'source-over';
+          const rr = base * 3.2 + 4;
+          ctx.strokeStyle = st.sel === n.n ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.5)'; ctx.lineWidth = 1.2;
+          ctx.save(); ctx.translate(x, y); ctx.rotate(time * .6);
+          for (let q = 0; q < 4; q++) { ctx.beginPath(); ctx.arc(0, 0, rr, q * TAU / 4 + .2, q * TAU / 4 + 1.2); ctx.stroke(); }
+          ctx.restore();
+          ctx.globalCompositeOperation = 'lighter';
+        }
+      });
+      ctx.globalCompositeOperation = 'source-over';
+      // nimet: aiheet himmeinä kun katsotaan tähtikuvioon; alueen nimi yleisnäkymässä
+      ctx.textAlign = 'center';
+      if (cur && st.focus) {
+        ctx.font = '400 13px "Barlow Condensed", sans-serif';
+        const root = c.nodes[0];
+        c.nodes.filter(n => n.kind === 'ai' && z >= .55).forEach(n => {
+          const [x, y] = P(n), [rx, ry] = P(root);
+          const dx = x - rx, dy = y - ry, d = Math.hypot(dx, dy) || 1;
+          ctx.textAlign = dx < -d * .25 ? 'right' : dx > d * .25 ? 'left' : 'center';
+          ctx.fillStyle = 'rgba(214,218,228,.6)';
+          drawCaps(n.n.n, x + dx / d * 16, y + dy / d * 10 + 22, 13, .12);
+        });
+        ctx.textAlign = 'center';
+        const hv = st.hover && c.nodes.find(n => n.n === st.hover);
+        if (hv && hv.kind === 'os') {
+          const [x, y] = P(hv);
+          ctx.fillStyle = '#fff'; ctx.shadowColor = '#000'; ctx.shadowBlur = 8;
+          drawCaps(hv.n.n, x, y - 24, 16, .14); ctx.shadowBlur = 0;
+        }
+      } else if (!st.focus) {
+        ctx.fillStyle = `rgba(240,240,232,${cur ? .95 : .55})`;
+        ctx.shadowColor = '#000'; ctx.shadowBlur = 6;
+        drawCaps(a.n, ox, oy + c.h / 2 * z + 34, cur ? 17 : 14, .16);
+        ctx.shadowBlur = 0;
+      }
+    });
+    // vuoret ja sumu
+    ctx.fillStyle = '#03050b';
+    ctx.beginPath(); ctx.moveTo(0, h);
+    for (let x = 0; x <= w + 24; x += 24) {
+      const X = x + cam.x * .3;
+      ctx.lineTo(x, h - 130 - 60 * Math.sin(X * .0035) - 34 * Math.sin(X * .009 + 1.3) - 14 * Math.sin(X * .027) - 6 * Math.sin(X * .07));
+    }
+    ctx.lineTo(w, h); ctx.closePath(); ctx.fill();
+    for (let k = 0; k < 4; k++) {
+      const x = ((time * (12 + k * 5) + k * 600 - cam.x * .2) % (w + 1200)) - 600;
+      const fg = ctx.createRadialGradient(x, h - 90, 0, x, h - 90, 520);
+      fg.addColorStop(0, 'rgba(150,165,190,.075)'); fg.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = fg; ctx.fillRect(x - 520, h - 610, 1040, 1040);
+    }
+    const bg = ctx.createLinearGradient(0, h - 240, 0, h);
+    bg.addColorStop(0, 'rgba(0,0,0,0)'); bg.addColorStop(1, 'rgba(0,0,0,.85)');
+    ctx.fillStyle = bg; ctx.fillRect(0, h - 240, w, 240);
+    requestAnimationFrame(frame);
+  }
+  function drawCaps(s, x, y, size, spacing) {
+    ctx.font = `400 ${size}px "Barlow Condensed", sans-serif`;
+    const txt = s.toUpperCase();
+    if ('letterSpacing' in ctx) { ctx.letterSpacing = `${size * spacing}px`; ctx.fillText(txt, x, y); ctx.letterSpacing = '0px'; }
+    else ctx.fillText(txt, x, y);
+  }
+
+  /* --------------------------------------------------------------- käyttöliittymä */
+  function renderTop() {
+    const g = st.grade, a = AREAS[st.ai];
+    $('gn').textContent = g >= 10 ? 'Huippu' : `Luokka ${g}`;
+    $('gb').style.width = (g / 10 * 100) + '%';
+    const nw = g >= 10 ? 0 : a.kids.flatMap(x => x.kids).filter(o => start(o) === g).length;
+    $('newp').innerHTML = g >= 10 ? 'Huipputaso' : `Uusia taitoja tällä luokalla<b>${nw}</b>`;
+    $('look').textContent = st.focus ? '↓ Takaisin taivaalle' : '↑ Katso tähtikuvioon';
+  }
+  function renderRing() {
+    const R = $('ring'), w = R.clientWidth, g = st.grade;
+    if (!R.children.length) AREAS.forEach((a, i) => { const b = document.createElement('button'); b.className = 'sk caps sh'; b.onclick = () => { if (i === st.ai) setFocus(!st.focus); else go(i); }; R.appendChild(b); });
+    const step = Math.max(200, Math.min(320, w / 4.2));
+    [...R.children].forEach((b, i) => {
+      let d = i - st.ai; if (d > 9) d -= 18; if (d < -9) d += 18;
+      const a = AREAS[i], lv = skillLevel(a, g), c = d === 0;
+      b.innerHTML = `${esc(a.n)}<span class="lv">${lv}</span>${c ? `<span class="pb"><i style="width:${lv}%"></i></span>` : ''}`;
+      b.style.left = (w / 2 + d * step) + 'px';
+      b.style.opacity = c ? 1 : w < 600 ? 0 : Math.max(0, .6 - (Math.abs(d) - 1) * .3);
+      b.style.fontSize = c ? (w < 600 ? '21px' : '26px') : '17px';
+      b.style.pointerEvents = Math.abs(d) > 2 ? 'none' : 'auto';
+      b.style.maxWidth = c ? 'none' : (step - 30) + 'px'; b.style.overflow = 'hidden'; b.style.textOverflow = 'ellipsis';
     });
   }
-  const firstSentence = s => { const i = s.indexOf('. '); return i > 0 && i < 220 ? s.slice(0, i + 1) : s.length > 220 ? s.slice(0, 217) + '…' : s; };
-  const shortName = s => s.length > 26 ? s.slice(0, 24) + '…' : s;
-
-  function showPerk(o, hover) {
-    const a = AREAS[st.ai], g = st.grade, P = $('perk');
-    if (!o) {
-      P.innerHTML = `<div class="t">${esc(a.n)}</div><div class="d">${esc(firstSentence(a.k || a.h || ''))}</div><div class="r">Klikkaa tähteä nähdäksesi taidon. Kirkkaat tähdet ovat hallussa ${g >= 10 ? '9. luokan lopussa' : g + '. luokalla'}.</div>`;
+  function renderInfo() {
+    const a = AREAS[st.ai], g = st.grade, o = st.sel, I = $('info');
+    if (!st.focus || !o) {
+      // ensimmäinen virke: piste, jota seuraa iso alkukirjain (ei "1. luokalta")
+      const s = a.k || '', m = s.slice(40).search(/[.!?]\s+(?=[A-ZÅÄÖ])/), first = m >= 0 && m + 41 < 260 ? s.slice(0, m + 41) : s;
+      I.innerHTML = st.focus ? `<div class="box"><div class="d">${esc(first)}</div><div class="r">Kirkkaat tähdet ovat hallussa ${g >= 10 ? '9. luokan lopussa' : g + '. luokalla'}. Valitse tähti.</div></div>` : '';
       return;
     }
     if (o.t === 2) {
-      const n = o.kids.length, on = o.kids.filter(k => rankAt(k, g) > 0).length;
-      P.innerHTML = `<div class="t">${esc(o.n)}</div><div class="d">${esc(o.k || '')}</div><div class="r">${on} / ${n} taitoa tähtikuviossa auki</div>`;
+      const on = o.kids.filter(k => rankAt(k, g) > 0).length;
+      I.innerHTML = `<div class="box"><div class="t caps">${esc(o.n)}</div><div class="d">${esc(o.k || '')}</div><div class="r">${on} / ${o.kids.length} taitoa auki</div></div>`;
       return;
     }
-    const rs = ranks(o), rk = rankAt(o, g), cur = rs[rk - 1], nxt = rs[rk];
-    let h = `<div class="t">${esc(o.n)} <small>(${rk}/${rs.length})</small></div>`;
+    if (o.t === 3) { I.innerHTML = `<div class="box"><div class="t caps">${esc(o.n)}</div><div class="d">${esc(o.h || '')}</div></div>`; return; }
+    const rs = ranks(o), rk = rankAt(o, g), cur = rs[rk - 1], nx = rs[rk];
+    let h = `<div class="box"><div class="t caps">${esc(o.n)} <small>(${rk}/${rs.length})</small></div>`;
     h += `<div class="d">${esc(cur ? cur.text : o.o || o.k || '')}</div>`;
-    if (rk === 0) h += `<div class="r">Vaatii: <b>${start(o)}. luokka</b>${rs[0] ? ' · ensimmäinen taso: ' + esc(rs[0].text) : ''}</div>`;
-    else if (nxt) h += `<div class="r">Seuraava taso: <b>${nxt.k === 'Huippu' ? 'huippu (9. luokan arvosana 9)' : nxt.k + ' (luokalta ' + nxt.g + ')'}</b></div>`;
-    else h += `<div class="r"><b>Huipputaso saavutettu.</b></div>`;
-    if (!hover) h += `<div class="r">${o.o ? 'Osaat, kun: ' + esc(o.o) + ' · ' : ''}<a href="../#${encodeURIComponent(o.id)}">Näytä Path of Exile -puussa</a></div>`;
-    P.innerHTML = h;
+    if (rk === 0) h += `<div class="r">Vaatii: <b>${start(o)}. luokka</b></div>`;
+    else if (nx) h += `<div class="r">Seuraava taso: <b>${nx.k === 'huippu' ? 'huippu, 9. luokan arvosana 9' : 'luokat ' + nx.k}</b></div>`;
+    else h += `<div class="r"><b>Huipputaso</b></div>`;
+    const pre = (o.e || []).map(id => by.get(id)).filter(m => m && m.a !== o.a);
+    if (pre.length) h += `<div class="r">Tarvitsee myös: ${pre.slice(0, 4).map(m => esc(m.n)).join(', ')}${pre.length > 4 ? ' …' : ''}</div>`;
+    h += `<div class="r"><a href="../#${encodeURIComponent(o.id)}">Näytä Path of Exile -puussa</a></div></div>`;
+    I.innerHTML = h;
   }
+  function renderAll() { renderTop(); renderRing(); renderInfo(); writeHash(); }
 
-  /* ------------------------------------------------------------- karuselli */
-  function renderRing() {
-    const R = $('ring'), w = R.clientWidth, g = st.grade;
-    if (!R.children.length) AREAS.forEach((a, i) => {
-      const b = document.createElement('button'); b.dataset.i = i;
-      b.onclick = () => go(i);
-      R.appendChild(b);
-    });
-    const step = Math.max(150, Math.min(240, w / 5));
-    [...R.children].forEach((b, i) => {
-      let d = i - st.ai; if (d > 9) d -= 18; if (d < -9) d += 18;
-      const a = AREAS[i], lv = skillLevel(a, g);
-      b.innerHTML = `${esc(a.n)}<span class="lv">${lv}</span><span class="pb"><i style="width:${lv}%"></i></span>`;
-      b.style.left = (w / 2 + d * step) + 'px';
-      b.style.opacity = d === 0 ? 1 : Math.max(0, .55 - Math.abs(d) * .14);
-      b.style.fontSize = d === 0 ? '24px' : '17px';
-      b.style.pointerEvents = Math.abs(d) > 3 ? 'none' : 'auto';
-      b.style.maxWidth = d === 0 ? '420px' : step - 16 + 'px';
-      b.style.overflow = 'hidden'; b.style.textOverflow = 'ellipsis';
-      b.querySelector('.pb').style.visibility = d === 0 ? 'visible' : 'hidden';
-    });
-  }
-
-  /* -------------------------------------------------------------- taivas */
-  const sky = $('sky'), sx = sky.getContext('2d');
-  let stars = [], skyOff = 0, skyTarget = 0;
-  function buildSky() {
-    const r = rng('taivas'); stars = [];
-    for (let i = 0; i < 1400; i++) stars.push({ x: r() * 3600, y: r(), z: .3 + r() * .7, s: r() < .03 ? 1.6 : r() < .2 ? 1.1 : .7, tw: r() * 6.28 });
-  }
-  function drawSky(t) {
-    const dpr = window.devicePixelRatio || 1, W = innerWidth, H = innerHeight;
-    if (sky.width !== Math.round(W * dpr)) { sky.width = Math.round(W * dpr); sky.height = Math.round(H * dpr); }
-    sx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    skyOff += (skyTarget - skyOff) * .06;
-    const g = sx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, '#02030a'); g.addColorStop(.6, '#060b1a'); g.addColorStop(1, '#0d1424');
-    sx.fillStyle = g; sx.fillRect(0, 0, W, H);
-    // sumut: yksi kunkin taidon värisävyssä, taivaan mukana kiertäen
-    AREAS.forEach((a, i) => {
-      const x = ((i * 200 - skyOff) % 3600 + 3600) % 3600 - 600 + W / 2 - 400;
-      if (x < -700 || x > W + 700) return;
-      const ng = sx.createRadialGradient(x, H * .4, 0, x, H * .4, 520);
-      ng.addColorStop(0, `hsla(${a.hue},55%,45%,.16)`); ng.addColorStop(.5, `hsla(${(a.hue + 40) % 360},50%,30%,.07)`); ng.addColorStop(1, 'rgba(0,0,0,0)');
-      sx.fillStyle = ng; sx.fillRect(x - 520, H * .4 - 520, 1040, 1040);
-    });
-    const time = t / 1000;
-    stars.forEach(s => {
-      const x = ((s.x - skyOff * s.z) % 3600 + 3600) % 3600 - (3600 - W) / 2;
-      if (x < -2 || x > W + 2) return;
-      const a = .35 + .4 * Math.sin(time * 1.3 + s.tw) * .5 + .3 * s.z;
-      sx.fillStyle = `rgba(230,240,255,${a})`;
-      sx.fillRect(x, s.y * H, s.s, s.s);
-    });
-    // horisontin vuorten siluetti
-    sx.fillStyle = '#020307';
-    sx.beginPath(); sx.moveTo(0, H);
-    for (let x = 0; x <= W + 20; x += 20) {
-      const X = x + skyOff * .35;
-      const y = H - 120 - 50 * Math.sin(X * .004) - 30 * Math.sin(X * .011 + 1) - 14 * Math.sin(X * .031);
-      sx.lineTo(x, y);
-    }
-    sx.lineTo(W, H); sx.closePath(); sx.fill();
-    requestAnimationFrame(drawSky);
-  }
-
-  /* ---------------------------------------------------------------- ohjaus */
-  function renderLevel() {
-    const g = st.grade;
-    $('gn').textContent = g >= 10 ? 'Huippu' : `Luokka ${g}`;
-    $('gb').style.width = (g / 10 * 100) + '%';
-  }
   function go(i) {
     i = (i + AREAS.length) % AREAS.length;
-    if (i === st.ai) return;
-    let d = i - st.ai; if (d > 9) d -= 18; if (d < -9) d += 18;
-    st.ai = i; st.sel = null; skyTarget += d * 200;
-    $('con').classList.add('fade');
-    setTimeout(() => { renderCon(); $('con').classList.remove('fade'); }, 280);
-    renderRing(); showPerk(null); writeHash();
+    st.ai = i; st.sel = null; st.hover = null;
+    camTarget();   // kamera kulkee lyhintä reittiä, koska taivas on lieriö (ks. frame)
+    renderAll();
   }
-  function setGrade(g) { st.grade = Math.max(1, Math.min(10, g)); renderLevel(); renderCon(); renderRing(); showPerk(st.sel); writeHash(); }
-  const writeHash = () => history.replaceState(null, '', `#${AREAS[st.ai].id}/${st.grade}`);
+  function setFocus(f) { st.focus = f; if (!f) st.sel = null; camTarget(); renderAll(); }
+  document.addEventListener('visibilitychange', () => { if (document.hidden) return; cam.x = cam.tx; cam.y = cam.ty; cam.z = cam.tz; });
+  function setGrade(g) { st.grade = Math.max(1, Math.min(10, g)); renderAll(); }
+  const writeHash = () => history.replaceState(null, '', `#${AREAS[st.ai].id}/${st.grade}${st.focus ? '/tk' : ''}`);
+
   $('gm').onclick = () => setGrade(st.grade - 1);
   $('gp').onclick = () => setGrade(st.grade + 1);
+  $('look').onclick = () => setFocus(!st.focus);
   window.addEventListener('keydown', e => {
     if (e.key === 'ArrowLeft') go(st.ai - 1);
-    if (e.key === 'ArrowRight') go(st.ai + 1);
-    if (e.key === 'ArrowUp' || e.key === '+') { e.preventDefault(); setGrade(st.grade + 1); }
-    if (e.key === 'ArrowDown' || e.key === '-') { e.preventDefault(); setGrade(st.grade - 1); }
-    if (e.key === 'Escape') { st.sel = null; renderCon(); showPerk(null); }
+    else if (e.key === 'ArrowRight') go(st.ai + 1);
+    else if (e.key === 'ArrowUp' || e.key === 'Enter') { e.preventDefault(); setFocus(true); }
+    else if (e.key === 'ArrowDown' || e.key === 'Escape' || e.key === 'Backspace') { e.preventDefault(); if (st.sel) { st.sel = null; renderInfo(); } else setFocus(false); }
+    else if (e.key === '+' || e.key === '=') setGrade(st.grade + 1);
+    else if (e.key === '-') setGrade(st.grade - 1);
   });
-  // pyyhkäisy puhelimella vaihtaa taitoa
-  let tx = null;
-  $('stage').addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
-  $('stage').addEventListener('touchend', e => { if (tx == null) return; const d = e.changedTouches[0].clientX - tx; if (Math.abs(d) > 60) go(st.ai + (d < 0 ? 1 : -1)); tx = null; });
-  document.addEventListener('click', e => { if (e.target.closest('#bottom') || e.target.closest('#top')) return; if (st.sel) { st.sel = null; renderCon(); showPerk(null); } });
-  window.addEventListener('resize', renderRing);
+  // osoitin: tähtien valinta, yleisnäkymässä tähtikuvion klikkaus
+  // osuma lasketaan kamerasta juuri nyt, ei edellisestä piirrosta (toimii vaikka ruutuja ei piirtyisi)
+  const pick = (x, y) => {
+    const a = AREAS[st.ai], c = constellation(a), [ox, oy] = proj(st.ai * SPACING, 0);
+    let b = null, bd = 22;
+    c.nodes.forEach(n => { const sx = ox + n.x * cam.z, sy = oy + n.y * cam.z, d = Math.hypot(sx - x, sy - y); if (d < bd) { bd = d; b = { n, x: sx, y: sy }; } });
+    return b;
+  };
+  cv.addEventListener('mousemove', e => {
+    if (!st.focus) { cv.style.cursor = 'pointer'; return; }
+    const s = pick(e.clientX, e.clientY); const n = s ? s.n.n : null;
+    if (n !== st.hover) { st.hover = n; }
+    cv.style.cursor = s ? 'pointer' : 'default';
+  });
+  let down = null;
+  cv.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+  cv.addEventListener('pointerup', e => {
+    if (!down) return;
+    const dx = e.clientX - down.x, dy = e.clientY - down.y; down = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) { go(st.ai + (dx < 0 ? 1 : -1)); return; }
+    if (Math.abs(dy) > 70 && Math.abs(dy) > Math.abs(dx)) { setFocus(dy > 0 ? true : false); return; }
+    if (!st.focus) {
+      // klikkaus taivaalle: lähin tähtikuvio valitaan, nykyiseen katsotaan
+      const rel = (e.clientX - W() / 2) / (cam.z * SPACING);
+      const d = Math.round(rel);
+      if (d === 0) setFocus(true); else go(st.ai + d);
+      return;
+    }
+    const s = pick(e.clientX, e.clientY);
+    st.sel = s ? s.n.n : null; renderInfo();
+  });
+  window.addEventListener('resize', () => { resize(); renderRing(); });
 
-  const [ha, hg] = decodeURIComponent(location.hash.slice(1)).split('/');
+  const [ha, hg, hf] = decodeURIComponent(location.hash.slice(1)).split('/');
   const hi = AREAS.findIndex(a => a.id === ha);
-  st.ai = hi >= 0 ? hi : 0; st.grade = Math.max(1, Math.min(10, +hg || 10));
-  skyTarget = skyOff = st.ai * 200;
-  buildSky(); requestAnimationFrame(drawSky);
-  renderLevel(); renderCon(); renderRing(); showPerk(null);
+  st.ai = hi >= 0 ? hi : 0; st.grade = Math.max(1, Math.min(10, +hg || 10)); st.focus = hf === 'tk';
+  resize(); cam.x = st.ai * SPACING; cam.y = cam.ty; cam.z = cam.tz;
+  renderAll();
+  requestAnimationFrame(frame);
 })();
 </script>
 </body>
