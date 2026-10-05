@@ -87,6 +87,8 @@ ul.lst small { color: var(--faint); }
 #tip b { color: var(--gold-2); font-family: Cinzel, serif; }
 #tip small { color: var(--muted); display: block; }
 
+/* ?kuva: pelkkä puu ilman käyttöliittymää (kuvakaappauksia varten) */
+body.kuva #top, body.kuva #legend, body.kuva #grade, body.kuva #tip { display: none !important; }
 @media (max-width: 760px) {
   #title div { display: none; }
   #q { width: calc(100vw - 150px); }
@@ -384,7 +386,14 @@ ul.lst small { color: var(--faint); }
   });
 
   // syvälinkki: #MA.4.2
-  const fromHash = () => { const n = M.byId.get(decodeURIComponent(location.hash.slice(1))); if (n) select(n, true); };
+  if (new URLSearchParams(location.search).has('kuva')) document.body.classList.add('kuva');
+  // syvälinkki: #MA.4.2 avaa solmun, #MA.4.2/polku näyttää kaiken, mitä se vaatii
+  const fromHash = () => {
+    const [id, extra] = decodeURIComponent(location.hash.slice(1)).split('/');
+    const n = M.byId.get(id);
+    if (!n) return;
+    if (extra === 'polku') { select(n, false); $('panel').classList.remove('open'); showPath(n); } else select(n, true);
+  };
   window.addEventListener('hashchange', fromHash); fromHash();
 })();
 </script>
