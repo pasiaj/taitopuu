@@ -9,7 +9,7 @@ mkdir -p "$DEST"
 rsync -a --delete peruskoulu/ "$DEST/"
 # versioleima: selain ei käytä vanhaa data.js:ää tai puu.js:ää välimuistista
 REV=$(git rev-parse --short HEAD)
-for f in "$DEST/index.html" "$DEST/esittely/index.html"; do
+find "$DEST" -name "*.html" | while read -r f; do
   sed -i.bak -E "s#src=\"(\.\./)?(data|puu)\.js\"#src=\"\1\2.js?v=$REV\"#g" "$f" && rm "$f.bak"
 done
 echo "Kopioitu: $DEST ($(git rev-parse --short HEAD))"

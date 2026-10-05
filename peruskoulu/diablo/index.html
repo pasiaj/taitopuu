@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Peruskoulun taitopuu: Diablo II</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Diablo II -henkinen näkymä: kivi, pronssi ja punainen. */
+:root {
+  --bg: #050403; --stone: #1b1813; --stone-2: #24201a; --edge: #5b4a2c; --edge-hi: #a88a4e;
+  --gold: #c7b377; --gold-hi: #f0d68a; --red: #c8352a; --blue: #6c7cff; --green: #3fbf4a;
+  --text: #d8d0bc; --muted: #8d846f; --grey: #6b6658;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font: 16px/1.45 "Alegreya Sans", system-ui, sans-serif; }
+body {
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(120, 30, 20, .35), transparent 60%),
+    radial-gradient(ellipse at 50% 120%, rgba(60, 40, 20, .35), transparent 60%),
+    var(--bg);
+}
+h1, h2, h3, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .04em; }
+a { color: var(--gold); }
+.stone {
+  background:
+    repeating-radial-gradient(circle at 20% 30%, rgba(255,255,255,.012) 0 2px, transparent 2px 7px),
+    repeating-radial-gradient(circle at 70% 80%, rgba(0,0,0,.18) 0 3px, transparent 3px 9px),
+    linear-gradient(160deg, var(--stone-2), var(--stone));
+  border: 3px solid var(--edge);
+  box-shadow: inset 0 0 0 1px #000, inset 0 0 0 3px rgba(168,138,78,.25), inset 0 0 40px rgba(0,0,0,.8), 0 0 0 1px #000, 0 12px 40px rgba(0,0,0,.8);
+  border-radius: 3px;
+}
+
+/* yläpalkki */
+#bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 12px 16px; }
+#bar h1 { margin: 0; font-size: 20px; color: var(--gold-hi); text-shadow: 0 0 12px rgba(200,53,42,.5); }
+#bar h1 small { display: block; font-size: 11px; letter-spacing: .14em; color: var(--muted); font-family: "Alegreya Sans", sans-serif; text-transform: uppercase; }
+.views { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn { font: 600 13px Cinzel, serif; letter-spacing: .05em; color: var(--gold); background: linear-gradient(#2a241b, #14110c); border: 2px solid var(--edge); padding: 7px 12px; cursor: pointer; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; border-radius: 2px; }
+.btn:hover { border-color: var(--edge-hi); color: var(--gold-hi); }
+.btn.on { border-color: var(--gold); color: var(--gold-hi); box-shadow: inset 0 0 12px rgba(240,214,138,.15); }
+
+/* päänäkymä: hahmo vasemmalla, taidot oikealla */
+#main { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 620px); gap: 18px; justify-content: center; padding: 6px 16px 30px; align-items: start; }
+#char { padding: 18px; }
+#char .cls { display: flex; gap: 14px; align-items: center; }
+.emblem { width: 74px; height: 74px; flex: none; border-radius: 50%; display: grid; place-items: center; font: 800 26px Cinzel, serif; color: #fff4d6; border: 3px solid var(--edge-hi); box-shadow: 0 0 0 2px #000, inset 0 0 20px rgba(0,0,0,.6), 0 0 22px var(--glow, rgba(200,53,42,.4)); text-shadow: 0 2px 4px #000; }
+#char h2 { margin: 0; font-size: 21px; color: var(--gold-hi); line-height: 1.15; }
+#char .grp { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; }
+#char .desc { color: var(--text); font-size: 15px; margin: 12px 0; }
+.stat { display: flex; justify-content: space-between; border-top: 1px solid rgba(91,74,44,.6); padding: 6px 2px; font-size: 15px; }
+.stat b { color: var(--gold-hi); font-family: Cinzel, serif; }
+#lvl { margin: 16px 0 8px; }
+#lvl .lab { display: flex; justify-content: space-between; align-items: baseline; }
+#lvl .lab b { font: 700 26px Cinzel, serif; color: var(--gold-hi); }
+#lvl .lab span { color: var(--muted); font-size: 13px; }
+#grades { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; margin-top: 8px; }
+#grades button { font: 700 14px Cinzel, serif; color: var(--muted); background: #0f0d09; border: 1px solid var(--edge); padding: 6px 0; cursor: pointer; }
+#grades button.on { color: #1b130a; background: linear-gradient(var(--gold-hi), var(--gold)); border-color: var(--gold-hi); }
+#grades button.past { color: var(--gold); }
+#top { font-size: 14px; color: var(--muted); }
+#top h3 { font-size: 13px; color: var(--gold); margin: 16px 0 6px; }
+#top li { margin: 2px 0; cursor: pointer; }
+#top li:hover { color: var(--gold-hi); }
+#top ol { padding-left: 20px; margin: 0; }
+
+#skills { display: grid; grid-template-columns: 1fr 150px; }
+#tree { position: relative; padding: 16px 10px 18px; min-height: 520px; border-right: 3px solid var(--edge); }
+#tree h3 { text-align: center; margin: 0 0 4px; color: var(--gold-hi); font-size: 17px; }
+#tree .sub { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+#grid { position: relative; margin: 0 auto; }
+#grid svg { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.rowlab { position: absolute; left: -2px; font: 600 11px Cinzel, serif; color: var(--grey); transform: translateY(-50%); width: 34px; text-align: right; }
+.skill { position: absolute; width: 64px; height: 64px; cursor: pointer; }
+.skill .ic { width: 100%; height: 100%; border: 2px solid #000; outline: 2px solid var(--edge); box-shadow: inset 0 0 0 2px rgba(255,255,255,.08), inset 0 -18px 24px rgba(0,0,0,.55); display: grid; place-items: center; font: 800 20px Cinzel, serif; color: #fff4d6; text-shadow: 0 2px 3px #000, 0 0 8px rgba(0,0,0,.8); position: relative; overflow: hidden; }
+.skill .ic::after { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,.18), transparent 40%, rgba(0,0,0,.35)); }
+.skill .pts { position: absolute; right: -10px; bottom: -10px; min-width: 26px; height: 22px; padding: 0 4px; background: #0b0906; border: 2px solid var(--edge); font: 700 14px Cinzel, serif; color: var(--gold-hi); display: grid; place-items: center; }
+.skill.locked .ic { filter: grayscale(1) brightness(.45); }
+.skill.locked .pts { color: var(--grey); }
+.skill.max .pts { color: #fff; border-color: var(--gold); box-shadow: 0 0 10px rgba(240,214,138,.6); }
+.skill:hover .ic, .skill.sel .ic { outline-color: var(--gold-hi); }
+.skill.sel .ic { box-shadow: inset 0 0 0 2px rgba(255,255,255,.08), 0 0 16px rgba(240,214,138,.7); }
+.skill.hl .ic { outline-color: var(--blue); }
+.skill .nm { position: absolute; top: 70px; left: 50%; transform: translateX(-50%); width: 104px; text-align: center; font-size: 12px; line-height: 1.15; color: var(--muted); }
+.skill:not(.locked) .nm { color: var(--text); }
+
+#tabs { display: flex; flex-direction: column; padding: 10px 8px; gap: 8px; }
+#tabs button { overflow-wrap: anywhere; hyphens: auto; -webkit-hyphens: auto; text-align: left; font: 600 12.5px/1.2 Cinzel, serif; color: var(--muted); background: linear-gradient(#211c15, #110e0a); border: 2px solid var(--edge); padding: 10px 8px; cursor: pointer; min-height: 54px; border-radius: 2px; }
+#tabs button small { display: block; font: 400 11px "Alegreya Sans", sans-serif; color: var(--grey); margin-top: 3px; }
+#tabs button.on { color: var(--gold-hi); border-color: var(--gold); background: linear-gradient(#3a2c18, #1a140c); box-shadow: inset 0 0 14px rgba(240,214,138,.12); }
+#tabs .pts { float: right; color: var(--gold); }
+
+/* tooltip D2-tyyliin: musta laatikko, keskitetty teksti */
+#tip { position: fixed; z-index: 20; max-width: 380px; padding: 12px 16px; background: rgba(0,0,0,.92); border: 1px solid #333; text-align: center; pointer-events: none; display: none; font-size: 15px; line-height: 1.35; }
+#tip.pinned { pointer-events: auto; border-color: var(--edge); max-height: 80vh; overflow: auto; }
+#tip .t { font: 700 18px Cinzel, serif; color: #fff; }
+#tip .req { color: var(--red); }
+#tip .ok { color: var(--muted); }
+#tip .w { color: #fff; }
+#tip .b { color: var(--blue); }
+#tip .g { color: var(--green); }
+#tip .gold { color: var(--gold-hi); }
+#tip .sec { margin-top: 9px; }
+#tip .small { font-size: 13px; color: var(--muted); }
+#tip .crit { font-size: 13px; color: var(--text); text-align: left; border-left: 2px solid var(--edge); padding-left: 8px; margin: 5px 0; }
+#tip .x { position: absolute; top: 4px; right: 8px; background: none; border: 0; color: var(--muted); font-size: 20px; cursor: pointer; display: none; }
+#tip.pinned .x { display: block; }
+
+/* hahmovalinta */
+#select { position: fixed; inset: 0; z-index: 30; background: radial-gradient(ellipse at 50% 30%, rgba(90,20,14,.55), rgba(0,0,0,.96) 70%); overflow: auto; padding: 30px 16px; display: none; }
+#select.open { display: block; }
+#select h2 { text-align: center; font-size: clamp(24px, 4vw, 40px); color: var(--gold-hi); margin: 0 0 4px; text-shadow: 0 0 20px rgba(200,53,42,.6); }
+#select p { text-align: center; color: var(--muted); margin: 0 auto 22px; max-width: 620px; }
+.grp-h { max-width: 1000px; margin: 18px auto 8px; font: 600 13px Cinzel, serif; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; }
+.classes { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.classes button { background: linear-gradient(#1d1912, #0e0c08); border: 2px solid var(--edge); color: var(--text); padding: 14px 8px 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; font: 600 14px/1.2 Cinzel, serif; border-radius: 2px; }
+.classes button:hover { border-color: var(--gold); color: var(--gold-hi); }
+.classes button small { font: 400 12px "Alegreya Sans", sans-serif; color: var(--muted); }
+.classes .emblem { width: 58px; height: 58px; font-size: 20px; }
+#foot { text-align: center; font-size: 12.5px; color: var(--grey); padding: 0 16px 24px; max-width: 900px; margin: 0 auto; }
+
+@media (max-width: 860px) {
+  #main { grid-template-columns: 1fr; }
+  #skills { grid-template-columns: 1fr; }
+  #tree { border-right: 0; border-bottom: 3px solid var(--edge); min-height: 0; }
+  #tabs { flex-direction: row; overflow-x: auto; }
+  #tabs button { min-width: 130px; }
+}
+</style>
+</head>
+<body>
+<div id="bar">
+  <h1>Peruskoulun taitopuu<small>Diablo II -näkymä · POPS 2014</small></h1>
+  <div class="views">
+    <a class="btn" href="../">Path of Exile</a>
+    <a class="btn on" href="./">Diablo II</a>
+    <button class="btn" id="chg">Vaihda hahmoluokkaa</button>
+    <a class="btn" href="https://github.com/pasiaj/taitopuu" target="_blank" rel="noopener" title="Lähdekoodi GitHubissa"><svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+  </div>
+</div>
+
+<div id="main">
+  <section id="char" class="stone"></section>
+  <section id="skills" class="stone">
+    <div id="tree"><h3 id="tabname"></h3><div class="sub" id="tabsub"></div><div id="grid"></div></div>
+    <nav id="tabs" aria-label="Aiheet"></nav>
+  </section>
+</div>
+<div id="foot">Hahmoluokka on osaamisalue, välilehti aihe ja taito osataito. Rivi kertoo luokan, jolla taito alkaa. Taitotaso (0–20) kasvaa luokka luokalta, ja 20 on 9. luokan huipputaso. Nuolet näyttävät edellytykset saman aiheen sisällä, synergiat edellytykset muilta alueilta. Lähde: Opetushallitus, POPS 2014. Kriteerit ovat sanatarkkoja, tasokuvaukset LLM:n johtamia.</div>
+
+<div id="tip"><button class="x" aria-label="Sulje">×</button><div id="tipc"></div></div>
+
+<div id="select">
+  <h2>Valitse hahmoluokka</h2>
+  <p>Jokainen hahmoluokka on yksi peruskoulun osaamisalue. Valitse luokka, katso sen taidot ja nosta tasoa luokka kerrallaan.</p>
+  <div id="classes"></div>
+</div>
+
+<script src="../data.js"></script>
+<script>
+(function () {
+  'use strict';
+  const D = window.TAITOPUU;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ------------------------------------------------------------- malli */
+  const by = new Map(D.nodes.map(n => [n.id, Object.assign({ kids: [], usedBy: [] }, n)]));
+  const N = [...by.values()];
+  N.forEach(n => { if (n.p && by.has(n.p)) by.get(n.p).kids.push(n); });
+  N.forEach(n => (n.e || []).forEach(id => { const m = by.get(id); if (m) m.usedBy.push(n); }));
+  const cmp = (a, b) => a.id.localeCompare(b.id, 'fi', { numeric: true });
+  N.forEach(n => n.kids.sort(cmp));
+  const areaOrder = D.ryhmat.flatMap(g => g.a);
+  areaOrder.forEach((id, i) => { const a = by.get(id); a.hue = i / areaOrder.length * 360; a.grp = D.ryhmat.find(g => g.a.includes(id)).n; });
+  N.forEach(n => { n.area = by.get(n.a); });
+  // osataidon alkaa-luokka; aiheelle pienin
+  const start = n => n.s != null ? n.s : n.kids.length ? Math.min(...n.kids.map(start)) : 9;
+
+  // taitotaso 0–20 luokan g mukaan (10 = huippu)
+  function pts(n, g) {
+    const s = start(n);
+    if (g < s) return 0;
+    if (g >= 10) return 20;
+    return Math.max(1, Math.min(19, Math.round(20 * (g - s + 1) / (10 - s))));
+  }
+  const stageOf = g => g <= 2 ? '1–2' : g <= 6 ? '3–6' : '7–9';
+  const STAGES = ['1–2', '3–6', '7–9'];
+  const initials = s => {
+    const w = s.replace(/[^\p{L}\s-]/gu, ' ').split(/[\s-]+/).filter(x => x.length > 2);
+    const last = w.length > 1 ? w[w.length - 1] : null;
+    return ((w[0] || s)[0] + (last ? last[0] : (w[0] || s)[1] || '')).toUpperCase();
+  };
+
+  /* ------------------------------------------------------------- tila */
+  const st = { area: null, tab: 0, grade: 10, sel: null };
+  function readHash() {
+    const [a, t, g] = decodeURIComponent(location.hash.slice(1)).split('/');
+    if (a && by.has(a) && by.get(a).t === 3) {
+      st.area = by.get(a); st.tab = Math.max(0, Math.min(st.area.kids.length - 1, (+t || 1) - 1));
+      st.grade = Math.max(1, Math.min(10, +g || 10));
+      return true;
+    }
+    return false;
+  }
+  const writeHash = () => history.replaceState(null, '', `#${st.area.id}/${st.tab + 1}/${st.grade}`);
+
+  /* ------------------------------------------------------- hahmovalinta */
+  function buildSelect() {
+    let h = '';
+    D.ryhmat.forEach(g => {
+      h += `<div class="grp-h">${esc(g.n)}</div><div class="classes">`;
+      g.a.forEach(id => {
+        const a = by.get(id), nOs = a.kids.reduce((s, x) => s + x.kids.length, 0);
+        h += `<button data-a="${id}"><span class="emblem" style="${emblemStyle(a)}">${esc(a.id)}</span>${esc(a.n)}<small>${a.kids.length} välilehteä · ${nOs} taitoa</small></button>`;
+      });
+      h += `</div>`;
+    });
+    $('classes').innerHTML = h;
+    $('classes').querySelectorAll('button').forEach(b => b.onclick = () => { st.area = by.get(b.dataset.a); st.tab = 0; $('select').classList.remove('open'); render(); });
+  }
+  const emblemStyle = a => `background: radial-gradient(circle at 35% 30%, hsl(${a.hue},70%,55%), hsl(${a.hue},70%,22%) 70%, #000); --glow: hsla(${a.hue},80%,50%,.45)`;
+  $('chg').onclick = () => $('select').classList.add('open');
+
+  /* --------------------------------------------------------- hahmopaneeli */
+  function renderChar() {
+    const a = st.area, g = st.grade;
+    const skills = a.kids.flatMap(x => x.kids);
+    const used = skills.reduce((s, n) => s + pts(n, g), 0);
+    const open = skills.filter(n => pts(n, g) > 0).length;
+    const maxed = skills.filter(n => pts(n, g) >= 20).length;
+    let h = `<div class="cls"><span class="emblem" style="${emblemStyle(a)}">${esc(a.id)}</span><div><div class="grp">${esc(a.grp)}</div><h2>${esc(a.n)}</h2></div></div>`;
+    h += `<div class="desc">${esc(a.k || '')}</div>`;
+    h += `<div id="lvl"><div class="lab"><b>${g >= 10 ? 'Huippu' : 'Luokka ' + g}</b><span>${g >= 10 ? '9. luokan arvosana 9' : g <= 2 ? 'alkuopetus' : g <= 6 ? 'vuosiluokat 3–6' : 'yläkoulu'}</span></div>
+      <div id="grades">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(x => `<button data-g="${x}" class="${x === g ? 'on' : x < g ? 'past' : ''}" title="${x >= 10 ? 'Huippu' : x + '. luokka'}">${x >= 10 ? '★' : x}</button>`).join('')}</div></div>`;
+    h += `<div class="stat"><span>Taitoja avattu</span><b>${open} / ${skills.length}</b></div>`;
+    h += `<div class="stat"><span>Huipputasolla</span><b>${maxed}</b></div>`;
+    h += `<div class="stat"><span>Taitopisteitä</span><b>${used} / ${skills.length * 20}</b></div>`;
+    if (a.h) h += `<div class="desc" style="font-size:14px;color:var(--muted)"><span class="cz" style="color:var(--gold);font-size:12px">HUIPPUOPPILAS</span><br>${esc(a.h)}</div>`;
+    // tällä luokalla alkavat taidot
+    const now = skills.filter(n => g < 10 && start(n) === g);
+    if (now.length) {
+      h += `<div id="top"><h3 class="cz">Alkaa ${g}. luokalla</h3><ol>${now.map(n => `<li data-id="${n.id}">${esc(n.n)}</li>`).join('')}</ol></div>`;
+    }
+    $('char').innerHTML = h;
+    $('char').querySelectorAll('#grades button').forEach(b => b.onclick = () => { st.grade = +b.dataset.g; render(); });
+    $('char').querySelectorAll('li[data-id]').forEach(li => li.onclick = () => goSkill(by.get(li.dataset.id)));
+  }
+
+  /* --------------------------------------------------------- taitoruudukko */
+  const CELL_W = 118, CELL_H = 112, PAD_L = 40, ICON = 64;
+  function layoutTab(ai) {
+    const skills = ai.kids.slice();
+    // rivit: luokka, jolla taito alkaa (kuten D2:n vaadittu taso)
+    const grades = [...new Set(skills.map(start))].sort((x, y) => x - y);
+    const rows = [];
+    grades.forEach(gr => {
+      const list = skills.filter(n => start(n) === gr);
+      for (let i = 0; i < list.length; i += 3) rows.push({ g: gr, list: list.slice(i, i + 3), first: i === 0 });
+    });
+    const pos = new Map();
+    rows.forEach((row, r) => {
+      const used = new Set();
+      // sarake: saman aiheen edellytyksen alle, jos mahdollista; muuten keskeltä alkaen
+      const want = n => { const pre = (n.e || []).map(id => pos.get(id)).filter(Boolean); return pre.length ? pre[0].c : null; };
+      const order = row.list.slice().sort((a, b) => (want(a) == null) - (want(b) == null));
+      order.forEach(n => {
+        let c = want(n);
+        if (c == null || used.has(c)) c = [1, 0, 2].find(x => !used.has(x));
+        used.add(c); pos.set(n.id, { r, c, n });
+      });
+    });
+    return { rows, pos };
+  }
+
+  function renderTree() {
+    const a = st.area, ai = a.kids[st.tab], g = st.grade;
+    $('tabname').textContent = ai.n;
+    const sk = ai.kids;
+    $('tabsub').textContent = `${sk.filter(n => pts(n, g) > 0).length} / ${sk.length} taitoa auki · ${sk.reduce((s, n) => s + pts(n, g), 0)} pistettä`;
+    const { rows, pos } = layoutTab(ai);
+    const W = PAD_L + 3 * CELL_W, H = rows.length * CELL_H + 10;
+    const grid = $('grid');
+    grid.style.width = W + 'px'; grid.style.height = H + 'px';
+    const cx = p => PAD_L + p.c * CELL_W + (CELL_W - ICON) / 2;
+    const cy = p => 8 + p.r * CELL_H;
+    let html = '';
+    rows.forEach((row, r) => { if (row.first) html += `<div class="rowlab" style="top:${cy({ r }) + ICON / 2}px">${row.g}. lk</div>`; });
+    // nuolet: saman aiheen edellytykset
+    let svg = `<svg width="${W}" height="${H}"><defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a88a4e"/></marker><marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0d68a"/></marker></defs>`;
+    sk.forEach(n => (n.e || []).forEach(id => {
+      const p = pos.get(id), q = pos.get(n.id);
+      if (!p || !q) return;
+      let x1 = cx(p) + ICON / 2, y1 = cy(p) + ICON + 6, x2 = cx(q) + ICON / 2, y2 = cy(q) - 6;
+      if (p.r === q.r) { y1 = cy(p) + ICON / 2; y2 = y1; x1 += (x2 > x1 ? 1 : -1) * (ICON / 2 + 4); x2 -= (x2 > x1 ? 1 : -1) * (ICON / 2 + 8); }
+      const lit = pts(by.get(id), g) > 0;
+      svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${lit ? '#f0d68a' : '#5b4a2c'}" stroke-width="${lit ? 3 : 2.5}" marker-end="url(#${lit ? 'ah2' : 'ah'})" opacity="${lit ? .9 : .8}"/>`;
+    }));
+    svg += `</svg>`;
+    pos.forEach(p => {
+      const n = p.n, v = pts(n, g);
+      const cls = ['skill', v === 0 ? 'locked' : '', v >= 20 ? 'max' : '', st.sel === n ? 'sel' : ''].join(' ');
+      const bg = `background: radial-gradient(circle at 30% 25%, hsl(${a.hue},65%,${48 + (p.c - 1) * 4}%), hsl(${(a.hue + 20) % 360},70%,16%) 75%), #000`;
+      html += `<div class="${cls}" data-id="${n.id}" style="left:${cx(p)}px;top:${cy(p)}px"><div class="ic" style="${bg}">${esc(initials(n.n))}</div><div class="pts">${v}</div><div class="nm">${esc(n.n)}</div></div>`;
+    });
+    grid.innerHTML = svg + html;
+    grid.querySelectorAll('.skill').forEach(el => {
+      const n = by.get(el.dataset.id);
+      el.onmouseenter = e => { if (!pinned) showTip(n, e); hl(n, true); };
+      el.onmousemove = e => { if (!pinned) placeTip(e); };
+      el.onmouseleave = () => { if (!pinned) hideTip(); hl(n, false); };
+      el.onclick = e => { e.stopPropagation(); st.sel = n; pin(n, e); renderTree(); };
+    });
+  }
+  function hl(n, on) {
+    (n.e || []).concat(n.usedBy.filter(m => m.p === n.p).map(m => m.id)).forEach(id => {
+      const el = $('grid').querySelector(`.skill[data-id="${CSS.escape(id)}"]`);
+      if (el) el.classList.toggle('hl', on);
+    });
+  }
+
+  function renderTabs() {
+    const a = st.area, g = st.grade;
+    $('tabs').innerHTML = a.kids.map((ai, i) => {
+      const p = ai.kids.reduce((s, n) => s + pts(n, g), 0);
+      return `<button class="${i === st.tab ? 'on' : ''}" data-i="${i}">${esc(ai.n)}<small>${ai.kids.length} taitoa <span class="pts">${p}</span></small></button>`;
+    }).join('');
+    $('tabs').querySelectorAll('button').forEach(b => b.onclick = () => { st.tab = +b.dataset.i; st.sel = null; unpin(); render(); });
+  }
+
+  /* -------------------------------------------------------------- tooltip */
+  let pinned = false;
+  function tipHtml(n, full) {
+    const g = st.grade, v = pts(n, g), s = start(n);
+    const tl = n.tl || {};
+    let h = `<div class="t">${esc(n.n)}</div>`;
+    h += v === 0 ? `<div class="req">Vaaditaan luokka: ${s}</div>` : `<div class="ok">Alkaa ${s}. luokalla</div>`;
+    const same = (n.e || []).map(id => by.get(id)).filter(m => m && m.a === n.a);
+    if (same.length) h += `<div class="${same.every(m => pts(m, g) > 0) ? 'ok' : 'req'}">Edellyttää: ${same.map(m => esc(m.n)).join(', ')}</div>`;
+    if (n.k) h += `<div class="sec w">${esc(n.k)}</div>`;
+    if (n.o) h += `<div class="sec gold">Osaat, kun: <span class="w">${esc(n.o)}</span></div>`;
+    // nykyinen ja seuraava taso
+    const cur = g >= 10 ? null : stageOf(g);
+    const next = g >= 10 ? null : STAGES.slice(STAGES.indexOf(cur) + 1).find(k => tl[k]);
+    if (v > 0) {
+      h += `<div class="sec"><span class="gold">Taitotaso: ${v}</span></div>`;
+      if (g >= 10) h += `<div class="w">${esc(n.h || '')}</div>`;
+      else if (tl[cur]) h += `<div class="w">${esc(tl[cur])}</div>`;
+      h += `<div class="sec gold">${g >= 10 ? '' : 'Seuraava taso:'}</div>`;
+      if (g < 10) h += `<div class="w">${esc(next ? tl[next] : n.h || '')}</div>${!next ? '<div class="small">(9. luokan huipputaso)</div>' : ''}`;
+    } else {
+      const first = STAGES.find(k => tl[k]);
+      if (first) h += `<div class="sec gold">Ensimmäinen taso (${first}):</div><div class="w">${esc(tl[first])}</div>`;
+    }
+    // synergiat: edellytykset muilta alueilta (ja taidot, jotka tästä hyötyvät)
+    const syn = (n.e || []).map(id => by.get(id)).filter(m => m && m.a !== n.a);
+    if (syn.length) {
+      h += `<div class="sec b">Synergiat (hyötyy näistä):</div>`;
+      syn.forEach(m => { h += `<div class="b">${esc(m.n)} <span class="small">(${esc(m.area.n)})</span>: taso ${pts(m, g)}</div>`; });
+    }
+    const helps = n.usedBy.filter(m => m.a !== n.a && m.t === 1);
+    if (helps.length) h += `<div class="sec small">Antaa synergian ${helps.length} taidolle muilla alueilla${full ? ': ' + helps.slice(0, 8).map(m => esc(m.n)).join(', ') + (helps.length > 8 ? ' …' : '') : ''}</div>`;
+    if (full) {
+      if (n.kids.length) h += `<div class="sec gold">Sisältää</div>` + n.kids.map(k => `<div class="${start(k) <= g ? 'w' : 'small'}">${esc(k.n)} <span class="small">· ${start(k)}. lk</span></div>`).join('');
+      if (n.ex) h += `<div class="sec g">Esimerkki: ${esc(n.ex)}</div>`;
+      if (n.c && n.c.length) h += `<div class="sec gold">POPSin kriteerit</div>` + n.c.map(c => `<div class="crit"><span class="gold">${esc(c[1])}</span><br>${esc(c[2])}</div>`).join('');
+      h += `<div class="sec small"><a href="../#${encodeURIComponent(n.id)}">Näytä Path of Exile -puussa →</a></div>`;
+    } else h += `<div class="sec small">Klikkaa: lisätiedot ja kriteerit</div>`;
+    return h;
+  }
+  function showTip(n, e) { $('tipc').innerHTML = tipHtml(n, false); $('tip').style.display = 'block'; placeTip(e); }
+  function placeTip(e) {
+    const T = $('tip'), r = T.getBoundingClientRect();
+    let x = e.clientX + 18, y = e.clientY + 18;
+    if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 18;
+    if (y + r.height > innerHeight - 8) y = Math.max(8, innerHeight - r.height - 8);
+    T.style.left = Math.max(8, x) + 'px'; T.style.top = y + 'px';
+  }
+  function hideTip() { $('tip').style.display = 'none'; }
+  function pin(n, e) {
+    pinned = true; const T = $('tip');
+    T.classList.add('pinned'); $('tipc').innerHTML = tipHtml(n, true); T.style.display = 'block';
+    if (innerWidth < 700) { T.style.left = '8px'; T.style.right = '8px'; T.style.top = '8px'; T.style.maxWidth = 'none'; }
+    else { T.style.right = ''; T.style.maxWidth = ''; placeTip(e); }
+  }
+  function unpin() { pinned = false; $('tip').classList.remove('pinned'); hideTip(); }
+  $('tip').querySelector('.x').onclick = () => { unpin(); st.sel = null; renderTree(); };
+  document.addEventListener('click', e => { if (pinned && !$('tip').contains(e.target)) { unpin(); st.sel = null; renderTree(); } });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { unpin(); st.sel = null; renderTree(); }
+    if (!st.area || e.target.tagName === 'INPUT') return;
+    if (e.key === 'ArrowRight' || e.key === '+') { st.grade = Math.min(10, st.grade + 1); render(); }
+    if (e.key === 'ArrowLeft' || e.key === '-') { st.grade = Math.max(1, st.grade - 1); render(); }
+    if (e.key === 'ArrowDown') { st.tab = Math.min(st.area.kids.length - 1, st.tab + 1); render(); }
+    if (e.key === 'ArrowUp') { st.tab = Math.max(0, st.tab - 1); render(); }
+  });
+
+  function goSkill(n) {
+    st.area = n.area; st.tab = Math.max(0, n.area.kids.indexOf(by.get(n.p))); st.sel = n; render();
+    const el = $('grid').querySelector(`.skill[data-id="${CSS.escape(n.id)}"]`);
+    if (el) { const r = el.getBoundingClientRect(); pin(n, { clientX: r.right, clientY: r.top }); }
+  }
+
+  function render() { if (!st.area) return; renderChar(); renderTabs(); renderTree(); writeHash(); }
+
+  buildSelect();
+  if (!readHash()) $('select').classList.add('open');
+  else render();
+  window.addEventListener('hashchange', () => { if (readHash()) { $('select').classList.remove('open'); render(); } });
+})();
+</script>
+</body>
+</html>

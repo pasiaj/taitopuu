@@ -3,7 +3,8 @@
 Opetussuunnitelmat taitopuina, Path of Exile -pelin tyyliin.
 
 **Peruskoulu:** <https://pasiaj.com/taitopuu/peruskoulu/>, esittely
-<https://pasiaj.com/taitopuu/peruskoulu/esittely/>
+<https://pasiaj.com/taitopuu/peruskoulu/esittely/>, Diablo II -näkymä
+<https://pasiaj.com/taitopuu/peruskoulu/diablo/>
 
 Kaikki, mitä huippuoppilas osaa peruskoulun päättyessä, taitoina eikä
 oppiaineina. Puussa on 18 osaamisaluetta, 134 aihetta, 617 osataitoa ja
@@ -26,6 +27,7 @@ tavoitteista, sisältöalueista ja arviointikriteereistä vuosiluokilla 1–2,
 |---|---|
 | `peruskoulu/index.html` | Interaktiivinen taitopuu (canvas, ei riippuvuuksia) |
 | `peruskoulu/esittely/` | Animoitu kierros katsojalle, joka ei tunne puuta |
+| `peruskoulu/diablo/` | Diablo II -näkymä: osaamisalue = hahmoluokka, aihe = taitovälilehti, rivi = luokka, jolla taito alkaa, taitotaso 0–20, synergiat = edellytykset muilta alueilta |
 | `peruskoulu/puu.js` | Asettelu ja piirto, yhteinen molemmille |
 | `peruskoulu/data.js` | Puun data (generoitu) |
 | `tools/peruskoulu-data.py` | Rakentaa `data.js`:n taitopuun korteista |
