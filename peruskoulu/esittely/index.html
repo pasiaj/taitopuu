@@ -63,6 +63,13 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
 #intro { position: fixed; inset: 0; display: grid; place-items: center; text-align: center; background: radial-gradient(ellipse at center, rgba(40,32,18,.55), rgba(7,8,11,.96) 70%); z-index: 4; transition: opacity 1s; padding: 24px; }
 #intro.gone { opacity: 0; pointer-events: none; }
 #intro h1 { font-size: clamp(30px, 6vw, 58px); margin: 0 0 12px; color: var(--gold-2); text-shadow: 0 0 30px rgba(217,180,92,.35); }
+/* tekijärivi pääotsikon alla: pieni kapiteeli kultaisen otsikon sävyssä, ohuet viivat sivuilla */
+#intro .byl { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 2px auto 22px; font: 600 13px/1 Cinzel, Georgia, serif; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); opacity: .9; text-shadow: 0 0 10px #000, 0 0 3px #000; }
+#intro .byl::before, #intro .byl::after { content: ""; width: 42px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); opacity: .6; }
+#intro .byl::after { transform: scaleX(-1); }
+#intro .byl span { opacity: .5; }
+#intro .byl a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(217,180,92,.35); }
+#intro .byl a:hover { color: var(--gold-2); border-bottom-color: var(--gold-2); }
 #intro p { color: var(--muted); max-width: 560px; margin: 0 auto 26px; font-size: 17px; }
 #hud { position: fixed; top: 18px; right: 22px; text-align: right; pointer-events: none; }
 #hud .g { font-family: Cinzel, serif; font-size: 34px; color: var(--gold-2); text-shadow: 0 0 18px rgba(217,180,92,.4); }
@@ -101,9 +108,9 @@ body.kuva #skip, body.kuva #nav, body.kuva #hud { display: none !important; }
 <div id="intro">
   <div>
     <h1>Mitä peruskoulussa oikeastaan opitaan?</h1>
+    <div class="byl">Pasi A Jokinen <span>·</span> <a href="https://pasiaj.com/" rel="author">pasiaj.com</a></div>
     <p>Peruskoulun opetussuunnitelma on satoja sivuja tekstiä. Jaottelin sen taidoiksi ja piirsin niistä pelin taitopuun: kartan kaikesta, mitä huippuoppilas osaa, kun peruskoulu loppuu.</p>
     <button class="btn gold" id="start">Aloita kierros</button>
-    <p style="margin:18px auto 0;font-size:14px;color:var(--muted)">Pasi A Jokinen · <a href="https://pasiaj.com/" rel="author" style="color:var(--muted)">pasiaj.com</a></p>
     <p style="margin-top:28px;font-size:14px"><span data-katso></span></p>
   </div>
 </div>
