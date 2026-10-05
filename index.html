@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taitopuu</title>
+<meta name="description" content="Peruskoulun opetussuunnitelma taitopuuna neljän pelin tavalla: Path of Exile, Diablo II, Duolingo ja Minecraft.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --bg: #f6f3ec; --card: #fffdf8; --line: #e3dccb; --text: #24211b; --muted: #6d665a; --accent: #8a6420; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0b0a08; --card: #15130f; --line: #3a3326; --text: #ece3cd; --muted: #a39780; --accent: #e0bc6a; } }
+:root[data-theme="dark"] { --bg: #0b0a08; --card: #15130f; --line: #3a3326; --text: #ece3cd; --muted: #a39780; --accent: #e0bc6a; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 Inter, system-ui, sans-serif; }
+main { max-width: 980px; margin: 0 auto; padding: 48px 16px 60px; }
+h1 { font: 700 clamp(32px, 6vw, 54px)/1.05 Cinzel, Georgia, serif; margin: 0 0 12px; color: var(--accent); }
+.lead { font-size: 18px; max-width: 680px; color: var(--text); margin: 0 0 8px; }
+.meta { color: var(--muted); font-size: 14px; margin: 0 0 34px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+a.card { display: block; text-decoration: none; color: inherit; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 20px 20px 18px; transition: border-color .15s, transform .15s; }
+a.card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.card h2 { font: 700 20px Cinzel, Georgia, serif; margin: 0 0 6px; color: var(--accent); }
+.card p { margin: 0; color: var(--muted); font-size: 15px; }
+.card .tag { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+footer { margin-top: 40px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 16px; }
+footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Taitopuu</h1>
+  <p class="lead">Kaikki, mitä huippuoppilas osaa peruskoulun päättyessä, taitoina eikä oppiaineina, ja sama puu neljän pelin tavalla.</p>
+  <p class="meta">18 osaamisaluetta · 134 aihetta · 617 osataitoa · 1 874 käsitettä · lähde: Opetushallitus, POPS 2014</p>
+  <div class="grid">
+    <a class="card" href="peruskoulu/"><span class="tag">Kartta</span><h2>Path of Exile</h2><p>Koko puu yhtenä säteittäisenä verkkona: luokkasäädin, luokkasuodatus, haku ja polku kaikkeen, mitä taito vaatii.</p></a>
+    <a class="card" href="peruskoulu/esittely/"><span class="tag">Johdanto</span><h2>Esittely</h2><p>Kymmenen vaiheen animoitu kierros sille, joka ei tunne taitopuita.</p></a>
+    <a class="card" href="peruskoulu/diablo/"><span class="tag">Hahmoluokat</span><h2>Diablo II</h2><p>Osaamisalue on hahmoluokka, aihe välilehti ja luokka hahmon taso. Taitotaso on 0–20, ja synergiat tulevat muilta alueilta.</p></a>
+    <a class="card" href="peruskoulu/duolingo/"><span class="tag">Pelattava</span><h2>Duolingo</h2><p>Oppimispolku luokasta 1 luokkaan 9. Oppitunneilla on oikeat monivalinnat, ja mukana ovat XP, putki ja päivän tavoite.</p></a>
+    <a class="card" href="peruskoulu/minecraft/"><span class="tag">Edistysaskeleet</span><h2>Minecraft</h2><p>Edistysaskelpuu, jossa kokemuspalkin taso on luokka. Työpöytä näyttää, mistä käsitteistä kukin taito rakentuu.</p></a>
+  </div>
+  <footer>Lähdekoodi: <a href="https://github.com/pasiaj/taitopuu">github.com/pasiaj/taitopuu</a>. Arviointikriteerit ovat POPSista sanatarkasti. Tasokuvaukset, luokat ja esimerkit on johdettu lähteestä LLM:llä, eikä niitä ole tarkistettu käsin.</footer>
+</main>
+</body>
+</html>

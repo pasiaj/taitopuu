@@ -5,7 +5,10 @@ Opetussuunnitelmat taitopuina, Path of Exile -pelin tyyliin.
 **Peruskoulu:** <https://pasiaj.com/taitopuu/peruskoulu/>, esittely
 <https://pasiaj.com/taitopuu/peruskoulu/esittely/>, Diablo II -näkymä
 <https://pasiaj.com/taitopuu/peruskoulu/diablo/>, Duolingo-näkymä
-<https://pasiaj.com/taitopuu/peruskoulu/duolingo/>
+<https://pasiaj.com/taitopuu/peruskoulu/duolingo/>, Minecraft-näkymä
+<https://pasiaj.com/taitopuu/peruskoulu/minecraft/>
+
+Sama sivusto GitHub Pagesissa: <https://pasiaj.github.io/taitopuu/>
 
 Kaikki, mitä huippuoppilas osaa peruskoulun päättyessä, taitoina eikä
 oppiaineina. Puussa on 18 osaamisaluetta, 134 aihetta, 617 osataitoa ja
@@ -29,6 +32,7 @@ tavoitteista, sisältöalueista ja arviointikriteereistä vuosiluokilla 1–2,
 | `peruskoulu/index.html` | Interaktiivinen taitopuu (canvas, ei riippuvuuksia) |
 | `peruskoulu/esittely/` | Animoitu kierros katsojalle, joka ei tunne puuta |
 | `peruskoulu/duolingo/` | Duolingo-näkymä: kurssi = osaamisalue, osio = vaihe, yksikkö = luokka, pallo = osataito, ja sen oppitunti kysyy niitä käsitteitä, jotka opitaan sillä luokalla (monivalinnat datasta). Kertauspokaalit, huipputaso, XP, putki ja päivän tavoite tallentuvat selaimeen. |
+| `peruskoulu/minecraft/` | Minecraft-näkymä: välilehti = osaamisalue, edistysaskelpuu kasvaa oikealle (alue → aihe → osataito saman aiheen edellytyksen perään), kokemuspalkin taso = luokka, "Edistysaskel saavutettu!" -ilmoitukset, työpöytä näyttää atomit raaka-aineina. Grafiikka on ohjelmallista pikseligrafiikkaa. |
 | `peruskoulu/diablo/` | Diablo II -näkymä: osaamisalue = hahmoluokka, aihe = taitovälilehti, rivi = luokka, jolla taito alkaa, taitotaso 0–20, synergiat = edellytykset muilta alueilta |
 | `peruskoulu/puu.js` | Asettelu ja piirto, yhteinen molemmille |
 | `peruskoulu/data.js` | Puun data (generoitu) |

@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Peruskoulun edistysaskeleet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Minecraft-henkinen edistysaskelnäkymä. Kaikki grafiikka piirretään ohjelmallisesti. */
+:root {
+  --ui: #c6c6c6; --ui-hi: #ffffff; --ui-lo: #555555; --slot: #8b8b8b; --text: #3f3f3f;
+  --tip: #100010; --tip-b1: #28007f; --tip-b2: #5000ff; --gold: #ffd84a; --green: #80ff20; --grey: #a0a0a0;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: #1d1d1d; color: #fff; font: 500 17px/1.3 "Pixelify Sans", "VT323", monospace; image-rendering: pixelated; }
+body { background-size: 64px 64px; }
+button { font: inherit; }
+.bevel { background: var(--ui); border: 4px solid; border-color: var(--ui-hi) var(--ui-lo) var(--ui-lo) var(--ui-hi); box-shadow: 0 0 0 3px #000; }
+.mcbtn { background: #6f6f6f; color: #fff; text-shadow: 2px 2px 0 #3f3f3f; border: 3px solid #000; box-shadow: inset 2px 2px 0 #aaa, inset -2px -3px 0 #3c3c3c; padding: 6px 14px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 16px; }
+.mcbtn:hover { background: #7f86b8; box-shadow: inset 2px 2px 0 #bec4e8, inset -2px -3px 0 #4a5078; }
+.mcbtn.on { background: #4f8f2f; box-shadow: inset 2px 2px 0 #8fcf5f, inset -2px -3px 0 #2f5f1f; }
+
+#head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 16px; }
+#head h1 { margin: 0; font-size: 26px; color: #fff; text-shadow: 3px 3px 0 #3f3f3f; font-weight: 700; }
+#head h1 small { display: block; font-size: 14px; color: #bbb; text-shadow: 2px 2px 0 #222; font-weight: 400; }
+.views { display: flex; gap: 6px; flex-wrap: wrap; }
+
+#wrap { width: min(1100px, calc(100% - 20px)); margin: 0 auto; }
+#tabs { display: flex; gap: 4px; overflow-x: auto; padding: 8px 4px 0; scrollbar-width: thin; }
+.tab { flex: none; width: 52px; height: 52px; background: #8b8b8b; border: 3px solid #000; border-bottom: 0; box-shadow: inset 3px 3px 0 #b5b5b5, inset -3px 0 0 #5a5a5a; display: grid; place-items: center; cursor: pointer; position: relative; top: 6px; }
+.tab.on { background: var(--ui); top: 0; height: 58px; box-shadow: inset 3px 3px 0 #fff, inset -3px 0 0 #555; z-index: 2; }
+.tab canvas { width: 32px; height: 32px; }
+
+#win { padding: 10px; position: relative; z-index: 1; }
+#win h2 { margin: 0 0 8px; font-size: 19px; color: var(--text); font-weight: 500; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+#win h2 span { color: #5a5a5a; }
+#view { position: relative; height: min(64vh, 620px); overflow: hidden; border: 3px solid; border-color: #373737 #fff #fff #373737; cursor: grab; touch-action: none; background-color: #333; }
+#view.drag { cursor: grabbing; }
+#canvas { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+#canvas svg { position: absolute; left: 0; top: 0; overflow: visible; }
+.adv { position: absolute; width: 52px; height: 52px; display: grid; place-items: center; cursor: pointer; }
+.adv canvas.frame { position: absolute; inset: 0; width: 52px; height: 52px; }
+.adv canvas.icon { position: relative; width: 32px; height: 32px; }
+.adv .lab { position: absolute; left: 58px; top: 50%; transform: translateY(-50%); white-space: nowrap; font-size: 14px; color: #fff; text-shadow: 2px 2px 0 #000; pointer-events: none; max-width: 230px; overflow: hidden; text-overflow: ellipsis; }
+.adv.locked .lab { color: #9a9a9a; }
+.adv.sel { outline: 3px solid #fff; outline-offset: 2px; }
+
+/* kokemuspalkki = luokka */
+#xp { margin: 12px auto 4px; width: min(640px, 100%); position: relative; padding-top: 26px; }
+#xp .lvl { position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-size: 26px; font-weight: 700; color: var(--green); text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000, 2px 2px #000; }
+#xp .bar { display: grid; grid-template-columns: repeat(10, 1fr); gap: 0; height: 14px; border: 2px solid #000; background: #262626; }
+#xp .bar button { border: 0; border-right: 2px solid #000; background: transparent; padding: 0; cursor: pointer; }
+#xp .bar button:last-child { border-right: 0; }
+#xp .bar button.f { background: linear-gradient(#b5ff6a 0 30%, #80ff20 30% 70%, #4fa310 70%); }
+#xp .hint { text-align: center; font-size: 14px; color: #ccc; margin-top: 6px; text-shadow: 2px 2px 0 #000; }
+
+/* työkaluvihje Minecraftin tapaan */
+#tip { position: fixed; z-index: 30; pointer-events: none; display: none; max-width: 360px; background: var(--tip); padding: 6px 9px 8px; border: 2px solid var(--tip-b1); outline: 2px solid var(--tip); box-shadow: inset 0 0 0 1px var(--tip-b2); font-size: 16px; line-height: 1.25; }
+#tip .t { color: #fff; }
+#tip .t.done { color: var(--gold); }
+#tip .d { color: #a8a8ff; margin-top: 4px; }
+#tip .g { color: var(--green); }
+#tip .r { color: #ff5555; }
+#tip .s { color: #aaa; margin-top: 4px; font-size: 14px; }
+#tip .y { color: #ffff55; }
+
+/* työpöytä */
+#craft { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.6); display: none; align-items: flex-start; justify-content: center; overflow: auto; padding: 30px 10px; }
+#craft.open { display: flex; }
+#cwin { width: min(640px, 100%); padding: 14px 16px 18px; color: var(--text); position: relative; }
+#cwin h3 { margin: 0 0 10px; font-size: 20px; font-weight: 500; color: var(--text); }
+#cwin .x { position: absolute; top: 6px; right: 10px; background: none; border: 0; font-size: 22px; cursor: pointer; color: var(--text); }
+.table { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin: 4px 0 12px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 54px); gap: 0; }
+.slot { width: 54px; height: 54px; background: var(--slot); border: 3px solid; border-color: #373737 #fff #fff #373737; display: grid; place-items: center; position: relative; cursor: default; }
+.slot canvas { width: 36px; height: 36px; }
+.slot.big { width: 78px; height: 78px; }
+.slot.big canvas { width: 52px; height: 52px; }
+.slot .cnt { position: absolute; right: 2px; bottom: 0; font-size: 15px; color: #fff; text-shadow: 2px 2px 0 #3f3f3f; }
+.slot.lockd canvas { filter: grayscale(1) brightness(.5); }
+.arrow { width: 50px; height: 34px; }
+.cinfo p { margin: 6px 0; font-size: 16px; color: var(--text); }
+.cinfo b { color: #1f1f1f; }
+.cinfo .k { color: #2a6b14; }
+.hotbar { display: flex; gap: 0; flex-wrap: wrap; margin-top: 6px; }
+.hotbar .slot { cursor: pointer; }
+.crit { font-size: 14px; border-left: 3px solid #8b8b8b; padding-left: 8px; margin: 5px 0; color: #333; }
+.sec { margin-top: 12px; font-size: 15px; color: #555; }
+
+/* ilmoitukset oikeassa yläkulmassa */
+#toasts { position: fixed; top: 14px; right: 14px; z-index: 40; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast { width: 320px; background: #212121; border: 3px solid #000; box-shadow: inset 2px 2px 0 #555, inset -2px -2px 0 #111; padding: 8px 10px; display: flex; gap: 10px; align-items: center; animation: tin .35s ease-out, tout .4s ease-in 4.4s forwards; }
+.toast canvas { width: 32px; height: 32px; flex: none; }
+.toast .a { color: #ffff55; font-size: 15px; }
+.toast .b { color: #fff; font-size: 15px; }
+@keyframes tin { from { transform: translateX(340px); } }
+@keyframes tout { to { transform: translateX(340px); opacity: 0; } }
+#foot { text-align: center; font-size: 13px; color: #aaa; padding: 10px 16px 24px; max-width: 860px; margin: 0 auto; text-shadow: 1px 1px 0 #000; }
+
+@media (max-width: 640px) {
+  #head h1 { font-size: 20px; }
+  .tab { width: 44px; height: 44px; } .tab.on { height: 50px; }
+  .tab canvas { width: 26px; height: 26px; }
+  #view { height: 58vh; }
+  .grid3 { grid-template-columns: repeat(3, 46px); } .slot { width: 46px; height: 46px; }
+}
+</style>
+</head>
+<body>
+<div id="head">
+  <h1>Peruskoulun edistysaskeleet<small>Minecraft-näkymä · POPS 2014</small></h1>
+  <div class="views">
+    <a class="mcbtn" href="../">Path of Exile</a>
+    <a class="mcbtn" href="../diablo/">Diablo II</a>
+    <a class="mcbtn" href="../duolingo/">Duolingo</a>
+    <a class="mcbtn on" href="./">Minecraft</a>
+    <a class="mcbtn" href="https://github.com/pasiaj/taitopuu" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</div>
+<div id="wrap">
+  <div id="tabs" role="tablist"></div>
+  <div id="win" class="bevel">
+    <h2><span id="title"></span><span id="count"></span></h2>
+    <div id="view"><div id="canvas"></div></div>
+  </div>
+  <div id="xp"><div class="lvl" id="lvl"></div><div class="bar" id="bar"></div><div class="hint" id="hint"></div></div>
+</div>
+<div id="foot">Välilehti on osaamisalue. Puu kasvaa vasemmalta oikealle: alue → aiheet (pyöreä kehys) → osataidot (neliö). Osataito haarautuu saman aiheen edellytyksestään. Kultainen kehys tarkoittaa, että taito on auki valitulla luokalla. Kokemuspalkin taso on luokka. Klikkaa taitoa, niin työpöytä näyttää, mistä käsitteistä se rakentuu. Lähde: Opetushallitus, POPS 2014.</div>
+
+<div id="tip"></div>
+<div id="toasts"></div>
+<div id="craft"><div id="cwin" class="bevel"><button class="x" id="cx" aria-label="Sulje">✕</button><div id="cbody"></div></div></div>
+
+<script src="../data.js"></script>
+<script>
+(function () {
+  'use strict';
+  const D = window.TAITOPUU;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ------------------------------------------------------------- malli */
+  const by = new Map(D.nodes.map(n => [n.id, Object.assign({ kids: [], usedBy: [] }, n)]));
+  const N = [...by.values()];
+  N.forEach(n => { if (n.p && by.has(n.p)) by.get(n.p).kids.push(n); });
+  N.forEach(n => (n.e || []).forEach(id => { const m = by.get(id); if (m) m.usedBy.push(n); }));
+  N.forEach(n => n.kids.sort((a, b) => a.id.localeCompare(b.id, 'fi', { numeric: true })));
+  const AREAS = D.ryhmat.flatMap(g => g.a).map(id => by.get(id));
+  AREAS.forEach((a, i) => { a.hue = i / AREAS.length * 360; a.gi = D.ryhmat.findIndex(g => g.a.includes(a.id)); });
+  N.forEach(n => { n.area = by.get(n.a); });
+  const start = n => n.s != null ? n.s : n.kids.length ? Math.min(...n.kids.map(start)) : 9;
+
+  /* ------------------------------------------------------- pikseligrafiikka */
+  // Tiivistefunktio -> toistettava satunnaisluku, jotta jokaisella taidolla on aina sama ikoni
+  function rng(seed) { let h = 2166136261; for (const c of seed) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 10000) / 10000; }; }
+  const hsl = (h, s, l) => `hsl(${h},${s}%,${l}%)`;
+  // 16×16 symmetrinen "esine" (identicon) alueen värisävyssä
+  const iconCache = new Map();
+  function icon(n, size) {
+    const key = n.id + ':' + (size || 16);
+    if (iconCache.has(key)) return iconCache.get(key);
+    const S = 16, r = rng(n.id), c = document.createElement('canvas');
+    c.width = S; c.height = S;
+    const x = c.getContext('2d');
+    const h = (n.area ? n.area.hue : 40) + (r() - .5) * 40;
+    const cols = [hsl(h, 70, 62), hsl(h, 65, 45), hsl(h, 60, 30), hsl((h + 180) % 360, 70, 70)];
+    const shape = n.t === 0 ? 'gem' : n.t === 1 ? 'tool' : 'block';
+    const grid = [];
+    for (let y = 0; y < S; y++) { grid.push([]); for (let i = 0; i < S / 2; i++) {
+      const dx = i - 7.5 + .5, dy = y - 7.5;
+      const d = shape === 'gem' ? Math.abs(dx) + Math.abs(dy) : shape === 'block' ? Math.max(Math.abs(dx), Math.abs(dy)) : Math.hypot(dx * 1.1, dy);
+      const lim = shape === 'gem' ? 7 : shape === 'block' ? 6.2 : 6.6;
+      let v = -1;
+      if (d < lim) v = r() < .62 ? (d < lim * .45 ? 0 : 1) : r() < .5 ? 2 : (r() < .25 ? 3 : 1);
+      if (d >= lim - 1 && d < lim) v = 2;
+      grid[y].push(v);
+    } }
+    for (let y = 0; y < S; y++) for (let i = 0; i < S / 2; i++) {
+      const v = grid[y][i]; if (v < 0) continue;
+      x.fillStyle = cols[v]; x.fillRect(i, y, 1, 1); x.fillRect(S - 1 - i, y, 1, 1);
+    }
+    // ääriviiva
+    const img = x.getImageData(0, 0, S, S), out = x.createImageData(S, S);
+    for (let y = 0; y < S; y++) for (let i = 0; i < S; i++) {
+      const a = img.data[(y * S + i) * 4 + 3];
+      if (a) continue;
+      const nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => { const X = i + dx, Y = y + dy; return X >= 0 && Y >= 0 && X < S && Y < S && img.data[(Y * S + X) * 4 + 3]; });
+      if (nb) { const o = (y * S + i) * 4; out.data[o] = 20; out.data[o + 1] = 16; out.data[o + 2] = 24; out.data[o + 3] = 255; }
+    }
+    const c2 = document.createElement('canvas'); c2.width = S; c2.height = S;
+    const x2 = c2.getContext('2d'); x2.putImageData(out, 0, 0); x2.drawImage(c, 0, 0);
+    iconCache.set(key, c2);
+    return c2;
+  }
+  function iconEl(n, cls, grey) {
+    const c = document.createElement('canvas'); c.width = 16; c.height = 16; c.className = cls || 'icon';
+    const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(icon(n), 0, 0);
+    if (grey) c.style.filter = 'grayscale(1) brightness(.55)';
+    return c;
+  }
+  // Kehykset: tehtävä (neliö), tavoite (pyöristetty), haaste (piikikäs)
+  function frame(kind, done) {
+    const c = document.createElement('canvas'); c.width = 26; c.height = 26; c.className = 'frame';
+    const x = c.getContext('2d');
+    const fill = done ? '#e8b923' : '#9a9a9a', hi = done ? '#fff1a8' : '#d8d8d8', lo = done ? '#8a5f00' : '#4a4a4a', bg = done ? '#c58f12' : '#6b6b6b';
+    const px = (X, Y, W, H, col) => { x.fillStyle = col; x.fillRect(X, Y, W, H); };
+    if (kind === 'challenge') {
+      px(3, 3, 20, 20, '#000'); px(4, 4, 18, 18, fill); px(5, 5, 16, 16, bg);
+      [[0, 11, 3, 4], [23, 11, 3, 4], [11, 0, 4, 3], [11, 23, 4, 3], [1, 1, 4, 4], [21, 1, 4, 4], [1, 21, 4, 4], [21, 21, 4, 4]].forEach(([a, b, w, h]) => px(a, b, w, h, '#000'));
+      [[1, 12, 2, 2], [23, 12, 2, 2], [12, 1, 2, 2], [12, 23, 2, 2], [2, 2, 2, 2], [22, 2, 2, 2], [2, 22, 2, 2], [22, 22, 2, 2]].forEach(([a, b, w, h]) => px(a, b, w, h, fill));
+      px(4, 4, 18, 1, hi); px(4, 4, 1, 18, hi); px(4, 21, 18, 1, lo); px(21, 4, 1, 18, lo);
+    } else if (kind === 'goal') {
+      px(4, 1, 18, 24, '#000'); px(1, 4, 24, 18, '#000'); px(2, 2, 22, 22, '#000');
+      px(4, 2, 18, 22, fill); px(2, 4, 22, 18, fill); px(3, 3, 20, 20, fill);
+      px(5, 4, 16, 18, bg); px(4, 5, 18, 16, bg);
+      px(4, 2, 18, 1, hi); px(2, 4, 1, 18, hi); px(4, 23, 18, 1, lo); px(23, 4, 1, 18, lo);
+    } else {
+      px(1, 1, 24, 24, '#000'); px(2, 2, 22, 22, fill); px(4, 4, 18, 18, bg);
+      px(2, 2, 22, 2, hi); px(2, 2, 2, 22, hi); px(2, 22, 22, 2, lo); px(22, 2, 2, 22, lo);
+    }
+    return c;
+  }
+  // Taustatekstuurit ryhmittäin: kivi, hiekka, ruoho/multa, lankku, netherkivi, end-kivi
+  const TEX = [[[118, 118, 118], 18], [[219, 207, 163], 14], [[134, 96, 67], 18], [[160, 130, 80], 12], [[110, 50, 50], 18], [[221, 223, 165], 10]];
+  const texCache = new Map();
+  function texture(gi) {
+    if (texCache.has(gi)) return texCache.get(gi);
+    const [base, v] = TEX[gi % TEX.length], r = rng('tex' + gi), c = document.createElement('canvas');
+    c.width = 16; c.height = 16; const x = c.getContext('2d');
+    for (let y = 0; y < 16; y++) for (let i = 0; i < 16; i++) {
+      const k = (r() - .5) * 2 * v - (gi === 3 && y % 4 === 0 ? 22 : 0);
+      x.fillStyle = `rgb(${base.map(b => Math.max(0, Math.min(255, b + k))).join(',')})`; x.fillRect(i, y, 1, 1);
+    }
+    const url = c.toDataURL(); texCache.set(gi, url); return url;
+  }
+
+  /* --------------------------------------------------------------- asettelu */
+  // Puun vanhempi: osataidolle saman aiheen ensimmäinen edellytys (syvä puu), muuten aihe.
+  function treeOf(area) {
+    const nodes = [area];
+    const parent = new Map(), kids = new Map([[area, []]]);
+    area.kids.forEach(ai => { nodes.push(ai); parent.set(ai, area); kids.get(area).push(ai); kids.set(ai, []); });
+    area.kids.forEach(ai => ai.kids.forEach(o => { nodes.push(o); kids.set(o, []); }));
+    area.kids.forEach(ai => {
+      const done = new Set();
+      // järjestä niin, että edellytys käsitellään ennen
+      const order = ai.kids.slice().sort((a, b) => start(a) - start(b));
+      order.forEach(o => {
+        const pre = (o.e || []).map(id => by.get(id)).filter(m => m && m.p === ai.id && done.has(m));
+        const p = pre.sort((a, b) => start(b) - start(a))[0] || ai;
+        parent.set(o, p); kids.get(p).push(o); done.add(o);
+      });
+    });
+    const COLW = 250, ROWH = 64;
+    let row = 0;
+    const pos = new Map();
+    (function place(n, d) {
+      const ks = kids.get(n) || [];
+      if (!ks.length) { pos.set(n, { x: d * COLW, y: row++ * ROWH }); return; }
+      ks.forEach(k => place(k, d + 1));
+      const ys = ks.map(k => pos.get(k).y);
+      pos.set(n, { x: d * COLW, y: (Math.min(...ys) + Math.max(...ys)) / 2 });
+    })(area, 0);
+    return { nodes, parent, pos, rows: row, depth: Math.max(...[...pos.values()].map(p => p.x)) / COLW + 1, COLW, ROWH };
+  }
+
+  /* ------------------------------------------------------------------ tila */
+  const st = { area: null, grade: 10, cam: { x: 30, y: 30, z: 1 }, sel: null };
+  const open = n => n.t === 3 || st.grade >= start(n);
+
+  function renderTabs() {
+    $('tabs').innerHTML = '';
+    AREAS.forEach(a => {
+      const b = document.createElement('div');
+      b.className = 'tab' + (a === st.area ? ' on' : ''); b.title = a.n; b.setAttribute('role', 'tab');
+      b.appendChild(iconEl(a, 'icon'));
+      b.onclick = () => { setArea(a); };
+      b.onmouseenter = e => showTip(`<div class="t">${esc(a.n)}</div><div class="d">${esc((a.k || '').slice(0, 140))}${(a.k || '').length > 140 ? '…' : ''}</div>`, e);
+      b.onmousemove = moveTip; b.onmouseleave = hideTip;
+      $('tabs').appendChild(b);
+    });
+  }
+
+  let T = null;
+  function renderTree() {
+    const a = st.area; T = treeOf(a);
+    $('title').textContent = a.n;
+    const os = a.kids.flatMap(x => x.kids);
+    $('count').textContent = `${os.filter(open).length} / ${os.length} edistysaskelta`;
+    $('view').style.backgroundImage = `url(${texture(a.gi)})`;
+    $('view').style.backgroundSize = '64px 64px';
+    const C = $('canvas'); C.innerHTML = '';
+    const W = T.depth * T.COLW + 300, H = T.rows * T.ROWH + 60;
+    C.style.width = W + 'px'; C.style.height = H + 'px';
+    // viivat Minecraftin tapaan: valkoinen keskiviiva mustalla reunuksella, kulmikas reititys
+    let s = `<svg width="${W}" height="${H}">`;
+    const seg = (x1, y1, x2, y2, col, w) => `<path d="M${x1} ${y1} H${(x1 + x2) / 2} V${y2} H${x2}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linejoin="miter"/>`;
+    const lines = [];
+    T.nodes.forEach(n => { const p = T.parent.get(n); if (!p) return; const A = T.pos.get(p), B = T.pos.get(n); lines.push([A.x + 52, A.y + 26, B.x, B.y + 26, open(n)]); });
+    lines.forEach(([x1, y1, x2, y2]) => { s += seg(x1, y1, x2, y2, '#000', 7); });
+    lines.forEach(([x1, y1, x2, y2, o]) => { s += seg(x1, y1, x2, y2, o ? '#fff' : '#9a9a9a', 3); });
+    s += `</svg>`;
+    C.innerHTML = s;
+    T.nodes.forEach(n => {
+      const p = T.pos.get(n), o = open(n);
+      const el = document.createElement('div');
+      el.className = 'adv' + (o ? '' : ' locked') + (st.sel === n ? ' sel' : '');
+      el.style.left = p.x + 'px'; el.style.top = p.y + 'px';
+      el.appendChild(frame(n.t === 3 ? 'challenge' : n.t === 2 ? 'goal' : 'task', o));
+      el.appendChild(iconEl(n, 'icon', !o));
+      const lab = document.createElement('div'); lab.className = 'lab'; lab.textContent = n.n; el.appendChild(lab);
+      el.onmouseenter = e => showTip(tipHtml(n), e); el.onmousemove = moveTip; el.onmouseleave = hideTip;
+      el.onclick = e => { if (moved) return; e.stopPropagation(); st.sel = n; if (n.t === 1) openCraft(n); else if (n.t === 2) openGoal(n); };
+      C.appendChild(el);
+    });
+    applyCam();
+  }
+  function applyCam() { $('canvas').style.transform = `translate(${st.cam.x}px,${st.cam.y}px) scale(${st.cam.z})`; const v = $('view'); v.style.backgroundPosition = `${st.cam.x * .5}px ${st.cam.y * .5}px`; }
+
+  function tipHtml(n) {
+    const o = open(n);
+    let h = `<div class="t ${o ? 'done' : ''}">${esc(n.n)}</div>`;
+    if (n.t === 1) {
+      h += `<div class="d">${esc(n.o || n.k || '')}</div>`;
+      h += o ? `<div class="g">Avattu ${start(n)}. luokalla</div>` : `<div class="r">Avautuu ${start(n)}. luokalla</div>`;
+      const pre = (n.e || []).map(id => by.get(id)).filter(Boolean);
+      if (pre.length) h += `<div class="s">Edellyttää: ${pre.slice(0, 5).map(m => esc(m.n)).join(', ')}${pre.length > 5 ? ' …' : ''}</div>`;
+      h += `<div class="s">Klikkaa: avaa työpöytä</div>`;
+    } else if (n.t === 2) {
+      h += `<div class="d">${esc(n.k || '')}</div><div class="s">${n.kids.filter(open).length} / ${n.kids.length} osataitoa auki · klikkaa: lisätiedot</div>`;
+    } else {
+      h += `<div class="d">${esc(n.h || n.k || '')}</div><div class="y">Haaste: 9. luokan huipputaso</div>`;
+    }
+    return h;
+  }
+  function showTip(h, e) { const t = $('tip'); t.innerHTML = h; t.style.display = 'block'; moveTip(e); }
+  function moveTip(e) { const t = $('tip'), r = t.getBoundingClientRect(); let x = e.clientX + 14, y = e.clientY - 10; if (x + r.width > innerWidth - 6) x = e.clientX - r.width - 14; if (y + r.height > innerHeight - 6) y = innerHeight - r.height - 6; t.style.left = Math.max(6, x) + 'px'; t.style.top = Math.max(6, y) + 'px'; }
+  function hideTip() { $('tip').style.display = 'none'; }
+
+  /* ---------------------------------------------------------------- työpöytä */
+  const stageOf = g => g <= 2 ? '1–2' : g <= 6 ? '3–6' : '7–9';
+  function slotEl(n, big, grey, count) {
+    const s = document.createElement('div'); s.className = 'slot' + (big ? ' big' : '') + (grey ? ' lockd' : '');
+    if (n) {
+      s.appendChild(iconEl(n, '', false));
+      if (count) { const c = document.createElement('span'); c.className = 'cnt'; c.textContent = count; s.appendChild(c); }
+      s.onmouseenter = e => showTip(`<div class="t ${grey ? '' : 'done'}">${esc(n.n)}</div><div class="d">${esc(n.k || '')}</div>${n.t === 0 ? `<div class="${grey ? 'r' : 'g'}">${grey ? 'Opitaan' : 'Opittu'} ${start(n)}. luokalla</div>` : ''}${n.ex ? `<div class="s">Esim. ${esc(n.ex)}</div>` : ''}`, e);
+      s.onmousemove = moveTip; s.onmouseleave = hideTip;
+    }
+    return s;
+  }
+  function openCraft(n) {
+    hideTip();
+    const B = $('cbody'); B.innerHTML = '';
+    const o = open(n), g = st.grade;
+    B.insertAdjacentHTML('beforeend', `<h3>Työpöytä: ${esc(n.n)}</h3>`);
+    const table = document.createElement('div'); table.className = 'table';
+    const grid = document.createElement('div'); grid.className = 'grid3';
+    // raaka-aineet: atomit keskelle "reseptiksi"
+    const atoms = n.kids, cells = new Array(9).fill(null);
+    const layout = [[4], [3, 5], [1, 4, 7], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 1, 2, 6, 7, 8]][Math.min(atoms.length, 6) - 1] || [];
+    atoms.slice(0, 9).forEach((t, i) => { cells[layout[i] != null ? layout[i] : i] = t; });
+    cells.forEach(t => grid.appendChild(slotEl(t, false, t && start(t) > g)));
+    table.appendChild(grid);
+    table.insertAdjacentHTML('beforeend', `<svg class="arrow" viewBox="0 0 25 17"><path d="M0 6h14V1h2v2h2v2h2v2h2v2h-2v2h-2v2h-2v2h-2v-5H0z" fill="#8b8b8b"/><path d="M0 6h14V1h2v2h2v2h2v2h2v2h-2v2h-2v2h-2v2h-2v-5H0z" fill="none" stroke="#373737"/></svg>`);
+    table.appendChild(slotEl(n, true, !o, Math.max(1, Math.round(20 * (g >= 10 ? 1 : Math.max(0, (g - start(n) + 1) / (10 - start(n))))))));
+    B.appendChild(table);
+    const tl = n.tl || {};
+    let h = `<div class="cinfo"><p>${esc(n.k || '')}</p>`;
+    if (n.o) h += `<p><b>Osaat, kun:</b> ${esc(n.o)}</p>`;
+    if (o) h += `<p class="k"><b>${g >= 10 ? 'Huipputaso' : g + '. luokalla'}:</b> ${esc(g >= 10 ? n.h || '' : tl[stageOf(g)] || '')}</p>`;
+    else h += `<p style="color:#8b1a1a"><b>Avautuu ${start(n)}. luokalla.</b></p>`;
+    if (n.ex) h += `<p><b>Esimerkki:</b> ${esc(n.ex)}</p>`;
+    h += `</div>`;
+    B.insertAdjacentHTML('beforeend', h);
+    const pre = (n.e || []).map(id => by.get(id)).filter(m => m && m.t >= 1);
+    if (pre.length) {
+      B.insertAdjacentHTML('beforeend', `<div class="sec">Tarvitset myös (klikkaa avataksesi):</div>`);
+      const hb = document.createElement('div'); hb.className = 'hotbar';
+      pre.forEach(m => { const s = slotEl(m, false, !open(m)); s.onclick = () => { if (m.area !== st.area) setArea(m.area); if (m.t === 1) openCraft(m); else openGoal(m); }; hb.appendChild(s); });
+      B.appendChild(hb);
+    }
+    if (n.c && n.c.length) B.insertAdjacentHTML('beforeend', `<div class="sec">POPSin kriteerit</div>` + n.c.map(c => `<div class="crit"><b>${esc(c[1])}</b><br>${esc(c[2])}</div>`).join(''));
+    B.insertAdjacentHTML('beforeend', `<div class="sec"><a href="../#${encodeURIComponent(n.id)}">Näytä Path of Exile -puussa →</a></div>`);
+    $('craft').classList.add('open');
+  }
+  function openGoal(ai) {
+    hideTip();
+    const B = $('cbody'); B.innerHTML = `<h3>${esc(ai.n)}</h3><div class="cinfo"><p>${esc(ai.k || '')}</p>${ai.o ? `<p><b>Osaat, kun:</b> ${esc(ai.o)}</p>` : ''}</div><div class="sec">Osataidot</div>`;
+    const hb = document.createElement('div'); hb.className = 'hotbar';
+    ai.kids.forEach(m => { const s = slotEl(m, false, !open(m)); s.onclick = () => openCraft(m); hb.appendChild(s); });
+    B.appendChild(hb);
+    $('craft').classList.add('open');
+  }
+  $('cx').onclick = () => { $('craft').classList.remove('open'); hideTip(); };
+  $('craft').onclick = e => { if (e.target === $('craft')) $('cx').onclick(); };
+
+  /* -------------------------------------------------------- kokemuspalkki */
+  function renderXp() {
+    const g = st.grade;
+    $('lvl').textContent = g >= 10 ? '★' : g;
+    $('bar').innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(i => `<button class="${i <= g ? 'f' : ''}" data-g="${i}" title="${i >= 10 ? 'Huippu' : i + '. luokka'}" aria-label="${i >= 10 ? 'Huippu' : i + '. luokka'}"></button>`).join('');
+    $('bar').querySelectorAll('button').forEach(b => b.onclick = () => setGrade(+b.dataset.g));
+    $('hint').textContent = g >= 10 ? 'Huippu: 9. luokan arvosanan 9 taso · nuolinäppäimet vaihtavat luokkaa' : `${g}. luokka · napsauta palkkia tai käytä nuolinäppäimiä`;
+  }
+  function setGrade(g) {
+    const prev = st.grade; st.grade = Math.max(1, Math.min(10, g));
+    renderXp(); renderTree(); writeHash();
+    if (st.grade > prev && st.grade < 10) {
+      const now = st.area.kids.flatMap(x => x.kids).filter(n => start(n) > prev && start(n) <= st.grade);
+      now.slice(0, 3).forEach((n, i) => setTimeout(() => toast(n), i * 300));
+      if (now.length > 3) setTimeout(() => toastText(`+${now.length - 3} muuta edistysaskelta`), 900);
+    }
+  }
+  function toast(n) {
+    const t = document.createElement('div'); t.className = 'toast';
+    t.appendChild(iconEl(n, '', false));
+    t.insertAdjacentHTML('beforeend', `<div><div class="a">Edistysaskel saavutettu!</div><div class="b">${esc(n.n)}</div></div>`);
+    $('toasts').appendChild(t); setTimeout(() => t.remove(), 5000);
+  }
+  function toastText(s) { const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<div class="b">${esc(s)}</div>`; $('toasts').appendChild(t); setTimeout(() => t.remove(), 5000); }
+
+  /* ----------------------------------------------------------- panorointi */
+  let drag = null, moved = false;
+  const V = $('view');
+  V.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, cx: st.cam.x, cy: st.cam.y }; moved = false; V.classList.add('drag'); });
+  window.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 4) { moved = true; hideTip(); }
+    st.cam.x = drag.cx + dx; st.cam.y = drag.cy + dy; applyCam();
+  });
+  window.addEventListener('pointerup', () => { drag = null; V.classList.remove('drag'); setTimeout(() => { moved = false; }, 0); });
+  V.addEventListener('wheel', e => {
+    e.preventDefault();
+    const r = V.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+    const z0 = st.cam.z, z = Math.max(.35, Math.min(1.8, z0 * Math.exp(-e.deltaY * .0015)));
+    st.cam.x = px - (px - st.cam.x) * z / z0; st.cam.y = py - (py - st.cam.y) * z / z0; st.cam.z = z; applyCam();
+  }, { passive: false });
+
+  /* ---------------------------------------------------------------- yleiset */
+  function fit() {
+    const v = $('view').getBoundingClientRect();
+    const W = T.depth * T.COLW + 260, H = T.rows * T.ROWH + 40;
+    // luettava zoom (vähintään 0,7); jos puu ei mahdu, aloitetaan juuren korkeudelta ja panoroidaan
+    const z = Math.max(.7, Math.min(1, Math.min(v.width / W, v.height / H)));
+    const rootY = T.pos.get(st.area).y * z;
+    st.cam = { z, x: 20, y: H * z <= v.height ? (v.height - H * z) / 2 : Math.min(16, v.height / 2 - rootY) }; applyCam();
+  }
+  function setArea(a) { st.area = a; st.sel = null; $('craft').classList.remove('open'); renderTabs(); renderTree(); fit(); writeHash(); }
+  const writeHash = () => history.replaceState(null, '', `#${st.area.id}/${st.grade}`);
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') $('cx').onclick();
+    if ($('craft').classList.contains('open')) return;
+    if (e.key === 'ArrowRight' || e.key === '+') setGrade(st.grade + 1);
+    if (e.key === 'ArrowLeft' || e.key === '-') setGrade(st.grade - 1);
+  });
+  window.addEventListener('resize', () => fit());
+
+  const [ha, hg] = decodeURIComponent(location.hash.slice(1)).split('/');
+  st.grade = Math.max(1, Math.min(10, +hg || 10));
+  renderXp();
+  setArea(by.get(ha) && by.get(ha).t === 3 ? by.get(ha) : AREAS[0]);
+})();
+</script>
+</body>
+</html>
