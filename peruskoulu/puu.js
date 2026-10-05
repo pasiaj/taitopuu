@@ -398,18 +398,39 @@
     }
     drawLabels(ctx, z, vis) {
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      const lab = (n, size, color, dy, bold) => {
+      // plate: tumma pohja ylemmän tason nimille, ettei alla oleva piirros sotke niitä
+      const lab = (n, size, color, dy, bold, plate) => {
         const s = size / z;
         ctx.font = `${bold ? '600 ' : ''}${s}px "Cinzel", "Georgia", serif`;
         ctx.lineWidth = s * 0.28; ctx.strokeStyle = 'rgba(5,5,8,0.9)';
         const y = n.y + dy;
-        wrap(n.n, n.t <= 1 ? 22 : 26).forEach((line, i, arr) => {
-          const yy = y + (i - (dy < 0 ? arr.length - 1 : 0)) * s * 1.15;
+        const lines = wrap(n.n, n.t <= 1 ? 22 : 26);
+        if (plate) {
+          const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + s * 0.9;
+          const top = y - s * 0.75 - (dy < 0 ? (lines.length - 1) * s * 1.15 : 0), h = lines.length * s * 1.15 + s * 0.35;
+          ctx.fillStyle = 'rgba(7,8,11,0.82)';
+          roundRect(ctx, n.x - w / 2, top, w, h, s * 0.35); ctx.fill();
+        }
+        lines.forEach((line, i) => {
+          const yy = y + (i - (dy < 0 ? lines.length - 1 : 0)) * s * 1.15;
           ctx.strokeText(line, n.x, yy); ctx.fillStyle = color; ctx.fillText(line, n.x, yy);
         });
       };
-      const root = this.m.root;
-      if (z > 0.3) lab(root, Math.min(26, 30 * z), '#f1d27a', root.r + 22 / z, true);
+      const hide = n => (this.onlySet || this.focus) && !this.passes(n);
+      // Piirtojärjestys alhaalta ylös: atomit, osataidot, aiheet, alueet, juuri.
+      // Ylemmän tason nimi on aina päällimmäisenä.
+      if (this.o.atomLabels !== false && z > (this.onlySet ? 0.9 : 1.7)) for (const n of this.m.nodes) {
+        if (n.t !== 0 || !vis(n) || hide(n)) continue;
+        lab(n, Math.min(11, 7.5 * z), this.passes(n) ? '#b9ad94' : '#4f493f', n.r + 7 / z + 3, false);
+      }
+      if (z > (this.onlySet ? 0.38 : 0.62)) for (const n of this.m.nodes) {
+        if (n.t !== 1 || !vis(n) || hide(n)) continue;
+        lab(n, Math.min(13, 15 * z), this.passes(n) ? '#d9ccb0' : '#5a5246', n.r + 9 / z + 4, false);
+      }
+      if (z > 0.22) for (const n of this.m.nodes) {
+        if (n.t !== 2 || !vis(n) || hide(n)) continue;
+        lab(n, Math.min(15, 34 * z), this.passes(n) ? '#e8d6a8' : '#5e5548', n.r + 14 / z * 0.6 + 10, true, true);
+      }
       // alueiden nimet säteen suuntaisesti, ettei 18 nimeä mene päällekkäin
       for (const a of this.m.areas) {
         const on = this.passes(a);
@@ -419,26 +440,26 @@
         ctx.translate(a.x, a.y); ctx.rotate(flip ? a.th + Math.PI : a.th);
         ctx.font = `600 ${s}px "Cinzel", "Georgia", serif`;
         ctx.textAlign = flip ? 'right' : 'left'; ctx.textBaseline = 'middle';
-        const dx = (a.r + 14) * (flip ? -1 : 1);
+        const dx = (a.r + 14) * (flip ? -1 : 1), w = ctx.measureText(a.n).width;
+        ctx.fillStyle = 'rgba(7,8,11,0.82)';
+        roundRect(ctx, flip ? dx - w - s * 0.4 : dx - s * 0.4, -s * 0.72, w + s * 0.8, s * 1.44, s * 0.35); ctx.fill();
         ctx.lineWidth = s * 0.3; ctx.strokeStyle = 'rgba(5,5,8,0.92)';
         ctx.strokeText(a.n, dx, 0);
         ctx.fillStyle = on ? hsl(a.hue, 80, 80) : '#6d6352'; ctx.fillText(a.n, dx, 0);
         ctx.restore();
       }
       ctx.textAlign = 'center';
-      if (z > 0.22) for (const n of this.m.nodes) {
-        if (n.t !== 2 || !vis(n) || ((this.onlySet || this.focus) && !this.passes(n))) continue;
-        lab(n, Math.min(15, 34 * z), this.passes(n) ? '#e8d6a8' : '#5e5548', n.r + 14 / z * 0.6 + 10, true);
-      }
-      if (z > (this.onlySet ? 0.38 : 0.62)) for (const n of this.m.nodes) {
-        if (n.t !== 1 || !vis(n) || ((this.onlySet || this.focus) && !this.passes(n))) continue;
-        lab(n, Math.min(13, 15 * z), this.passes(n) ? '#d9ccb0' : '#5a5246', n.r + 9 / z + 4, false);
-      }
-      if (this.o.atomLabels !== false && z > (this.onlySet ? 0.9 : 1.7)) for (const n of this.m.nodes) {
-        if (n.t !== 0 || !vis(n) || ((this.onlySet || this.focus) && !this.passes(n))) continue;
-        lab(n, Math.min(11, 7.5 * z), this.passes(n) ? '#b9ad94' : '#4f493f', n.r + 7 / z + 3, false);
-      }
+      const root = this.m.root;
+      if (z > 0.3) lab(root, Math.min(26, 30 * z), '#f1d27a', root.r + 22 / z, true, true);
     }
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
   }
 
   function wrap(s, max) {
