@@ -74,7 +74,7 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
 <div id="intro">
   <div>
     <h1>Mitä peruskoulussa oikeastaan opitaan?</h1>
-    <p>Yhdeksässä vuodessa lapsesta kasvaa ihminen, joka osaa satoja asioita. Tämä on kartta niistä kaikista, piirrettynä kuin pelin taitopuu.</p>
+    <p>Peruskoulun opetussuunnitelma on satoja sivuja tekstiä. Jaottelin sen taidoiksi ja piirsin niistä pelin taitopuun: kartan kaikesta, mitä huippuoppilas osaa, kun peruskoulu loppuu.</p>
     <button class="btn gold" id="start">Aloita kierros</button>
     <p style="margin-top:28px;font-size:14px"><span data-katso></span></p>
   </div>
@@ -158,9 +158,9 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
   const S = [
     {
       h: 'Yksi pieni asia',
-      b: () => `<p>Kaikki alkaa pienestä. Tämä valopiste on <span class="k">atomi</span>: yksi käsite, fakta tai perustekniikka.</p>
-        <p><span class="k">${esc(exAtom.n)}</span>${exAtom.k ? ` – ${esc(exAtom.k)}` : ''}</p>
-        <p><small>Tämä opitaan tyypillisesti ${exAtom._s}. luokalla.</small></p>`,
+      b: () => `<p>Kaikki alkaa yksittäisestä asiasta. Tämä valopiste on <span class="k">käsite</span>, pienin palanen, jonka oppilas oppii tunnistamaan.</p>
+        <p><span class="k">${esc(exAtom.n)}</span>${exAtom.k ? `: ${esc(exAtom.k)}` : ''}</p>
+        <p><small>Tämä opitaan yleensä ${exAtom._s}. luokalla.</small></p>`,
       go() {
         V.grade = 10; V.sel = exAtom; lit([exAtom]);
         V.flyTo(shift({ x: exAtom.x, y: exAtom.y, z: 2.6 }), 2200);
@@ -169,9 +169,9 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
     },
     {
       h: 'Atomeista syntyy taito',
-      b: () => `<p>Kun muutama atomi on hallussa, niistä syntyy <span class="k">osataito</span>, jotain mitä osaa <em>tehdä</em>.</p>
+      b: () => `<p>Muutamasta käsitteestä syntyy <span class="k">taito</span>, jotain mitä oppilas osaa <em>tehdä</em>.</p>
         <p><span class="k">${esc(exOs.n)}</span>: ${esc(exOs.o || exOs.k || '')}</p>
-        <p><small>Kultaiset viivat näyttävät, mistä taito koostuu.</small></p>`,
+        <p><small>Viivat näyttävät, mistä käsitteistä taito koostuu.</small></p>`,
       go() {
         V.sel = exOs; lit([exAtom]); hud(`${exOs._s}. luokalta`, exArea.n);
         V.flyTo(shift(fit([exOs, ...exOs.kids], 0.35)), 1600);
@@ -181,8 +181,8 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
     },
     {
       h: 'Taidoista kokonaisuus',
-      b: () => `<p>Taidot ryhmittyvät <span class="k">aiheiksi</span>, isoiksi kokonaisuuksiksi kuten <span class="k">${esc(exAihe.n)}</span>.</p>
-        <p>Aihe on hallussa, kun sen taidot ovat. Juuri näitä kokonaisuuksia huippuoppilas osaa yhdistellä 9. luokalla.</p>`,
+      b: () => `<p>Toisiinsa liittyvät taidot muodostavat <span class="k">aiheen</span>, esimerkiksi <span class="k">${esc(exAihe.n)}</span>.</p>
+        <p>Aihe on hallussa, kun sen taidot ovat. 9. luokalla huippuoppilas osaa yhdistellä aiheen taitoja keskenään.</p>`,
       go() {
         V.sel = exAihe; lit(desc(exOs)); hud(exAihe.n, exArea.n);
         V.flyTo(shift(fit(desc(exAihe), 0.6)), 1500);
@@ -192,8 +192,8 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
     },
     {
       h: 'Kokonaisuuksista osaamisalue',
-      b: () => `<p>Aiheet kasvavat haaraksi: <span class="k">osaamisalueeksi</span>. Tämä on <span class="k">${esc(exArea.n)}</span>, jossa on ${exArea.kids.length} aihetta ja ${exArea.kids.reduce((s, a) => s + a.kids.length, 0)} taitoa.</p>
-        <p>Haara lähtee keskeltä ja ulottuu ulospäin: mitä kauempana keskustasta, sitä pidemmälle asiassa on päästy.</p>`,
+      b: () => `<p>Aiheet kokoontuvat <span class="k">osaamisalueeksi</span>. Tämä on <span class="k">${esc(exArea.n)}</span>: ${exArea.kids.length} aihetta ja ${exArea.kids.reduce((s, a) => s + a.kids.length, 0)} taitoa.</p>
+        <p>Alue on puun haara. Se lähtee keskeltä, ja mitä kauempana keskustasta taito on, sitä pidemmälle asiassa on edetty.</p>`,
       go() {
         V.sel = exArea; lit(desc(exAihe)); hud(exArea.n, `${desc(exArea).length} solmua`);
         V.flyTo(shift(fit([exArea, ...desc(exArea)], 0.75)), 1600);
@@ -203,8 +203,8 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
     },
     {
       h: 'Koko peruskoulu',
-      b: () => `<p>Peruskoulussa on <span class="k">${A.length} osaamisaluetta</span>: ${aiheet.length} aihetta, ${os.length} osataitoa ja ${atomit.length} atomia. Ne kaikki on johdettu Opetushallituksen opetussuunnitelman perusteista.</p>
-        <p>Keskellä on <span class="k">huippuoppilas</span>, ja ympärillä kaikki, mitä hänestä kasvaa.</p>`,
+      b: () => `<p>Jaottelin peruskoulun oppimäärän <span class="k">${A.length} osaamisalueeseen</span>, ja niissä on yhteensä ${aiheet.length} aihetta, ${os.length} taitoa ja ${atomit.length} käsitettä.</p>
+        <p>Jako on oma. Opetushallituksen opetussuunnitelma jakaa sisällöt oppiaineisiin ja seitsemään laaja-alaiseen osaamiseen, ja puun voi järjestää myös niiden mukaan. Taidot, kriteerit ja tavoitteet tulevat suoraan opetussuunnitelmasta.</p>`,
       go() {
         V.sel = null; lit(desc(exArea));
         V.flyTo(shift(V.fitAll(0.9)), 1800);
@@ -214,8 +214,8 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
     },
     {
       h: 'Taidot, ei oppiaineet',
-      b: () => `<p>Koulun lukujärjestyksessä on oppiaineita. Puu on kuitenkin rakennettu <span class="k">taidoista</span>, koska sama taito palvelee monta ainetta.</p>
-        <p>Valaistuina ovat taidot, joita <span class="k">${esc(Puu.OPPIAINEET[exTag] || exTag)}</span> opettaa. Ne ovat levittyneet <span class="k">${exTagAreas} eri osaamisalueelle</span>.</p>`,
+      b: () => `<p>Jaottelin alueet taitojen enkä oppiaineiden mukaan, koska sama taito palvelee usein montaa ainetta.</p>
+        <p>Valaistuina ovat taidot, joita <span class="k">${esc(Puu.OPPIAINEET[exTag] || exTag)}</span> opettaa. Ne jakautuvat <span class="k">${exTagAreas} osaamisalueelle</span>.</p>`,
       go() {
         V.sel = null; V.focus = null; V.filter = exTag; V.dirty = true;
         V.flyTo(shift(V.fitAll(0.95)), 1200);
@@ -225,8 +225,8 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
     },
     {
       h: 'Taidot nojaavat toisiinsa',
-      b: () => `<p>Puu on myös verkko. Taitoa <span class="k">${esc(exPath.n)}</span> ei voi oppia tyhjästä, vaan se tarvitsee taitoja ${pathAreas(exPath) - 1} muulta alueelta.</p>
-        <p>Katkoviivat ovat <span class="k">edellytyksiä</span>. Koko puussa niitä on ${M.prereq.length}, joista ${crossCount} ylittää alueiden rajat.</p>`,
+      b: () => `<p>Taidot myös rakentuvat toistensa päälle. Taito <span class="k">${esc(exPath.n)}</span> tarvitsee pohjakseen taitoja ${pathAreas(exPath) - 1} muulta alueelta.</p>
+        <p>Katkoviivat ovat <span class="k">edellytyksiä</span>. Koko puussa niitä on ${M.prereq.length}, ja ${crossCount} niistä ylittää alueiden rajat.</p>`,
       go() {
         V.filter = null; V.sel = exPath;
         const set = Puu.closure(exPath); anc(exPath).forEach(a => set.add(a));
@@ -241,8 +241,8 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
     },
     {
       h: 'Luokka kerrallaan',
-      b: () => `<p>Mikään ei ala yhtä aikaa. Katso, miten puu syttyy luokka luokalta: jokainen taito alkaa tietyllä luokalla ja kirkastuu, kun oppilas kasvaa.</p>
-        <p><small>Kirkkaus kertoo, kuinka pitkällä taidossa ollaan. Täysi loisto on 9. luokan huipputaso.</small></p>`,
+      b: () => `<p>Kaikkea ei opita yhtä aikaa. Katso, miten puu syttyy luokka luokalta: jokainen taito alkaa tietyllä luokalla ja vahvistuu vuosi vuodelta.</p>
+        <p><small>Mitä kirkkaampi taito, sitä pidemmällä siinä ollaan. Täysi loisto tarkoittaa 9. luokan huipputasoa.</small></p>`,
       go() {
         V.sel = null; V.focus = null; V.filter = null;
         V.flyTo(shift(V.fitAll(0.95)), 1000);
@@ -254,10 +254,10 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
     },
     {
       h: 'Huippuoppilas',
-      b: () => critPick ? `<p>Opetussuunnitelma kertoo tarkasti, mitä eri arvosanoihin vaaditaan. Taidossa <span class="k">${esc(critPick[0].n)}</span>:</p>
+      b: () => critPick ? `<p>Opetussuunnitelman arviointikriteerit kertovat, mitä eri arvosanoihin vaaditaan. Taidossa <span class="k">${esc(critPick[0].n)}</span> ero on tämä:</p>
         <q><small>Arvosana 8</small><br>${esc(critPick[1][2])}</q>
         <q><small>Arvosana 9</small><br>${esc(critPick[2][2])}</q>
-        <p>Puun jokainen taito on kuvattu tälle huipputasolle.</p>`
+        <p>Kriteerit on lainattu sanatarkasti. Puun jokaiseen taitoon on kuvattu myös huipputaso, eli arvosanan 9 taso.</p>`
         : `<p>Puun jokainen taito on kuvattu huipputasolle: arvosanan 9 tasolle 9. luokan lopussa.</p>`,
       go() {
         V.grade = 10; V.focus = null; V.filter = null; V.dirty = true;
@@ -269,11 +269,12 @@ h1, h2, .cz { font-family: Cinzel, Georgia, serif; letter-spacing: .02em; }
     },
     {
       h: 'Tutki itse',
-      b: () => `<p>Nyt tiedät, miten puuta luetaan:</p>
-        <p>• <span class="k">pienet pisteet</span> ovat käsitteitä, <span class="k">isommat</span> taitoja ja kokonaisuuksia<br>
-        • <span class="k">haarat</span> ovat osaamisalueita<br>
+      b: () => `<p>Näin puuta luetaan:</p>
+        <p>• <span class="k">pienet pisteet</span> ovat käsitteitä, <span class="k">isommat</span> taitoja ja aiheita<br>
+        • <span class="k">haarat</span> ovat osaamisalueita, joihin jaottelin oppimäärän<br>
         • <span class="b">katkoviivat</span> näyttävät, mitä taito vaatii<br>
-        • <span class="k">luokkaliukusäädin</span> näyttää, mitä missäkin vaiheessa osataan</p>
+        • <span class="k">luokkasäädin</span> näyttää, mitä missäkin vaiheessa osataan<br>
+        • <span class="k">Järjestä</span>-valinta näyttää saman puun oppiaineittain tai laaja-alaisittain</p>
         <p><a class="btn gold" href="../">Avaa taitopuu →</a></p><p style="font-size:13px;color:var(--muted)"><span data-katso></span></p>`,
       go() {
         V.sel = null; V.focus = null; V.grade = 10; V.dirty = true; V.o.crossLinks = true;
