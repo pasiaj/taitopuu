@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Peruskoulun taitopolku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* Duolingo-henkinen oppimispolku: valoisa, pyöreä, kolmiulotteiset painikkeet. */
+:root {
+  --bg: #ffffff; --panel: #ffffff; --line: #e5e5e5; --text: #3c3c3c; --muted: #777777; --soft: #f7f7f7;
+  --green: #58cc02; --green-d: #58a700; --blue: #1cb0f6; --blue-d: #1899d6; --red: #ff4b4b; --red-d: #ea2b2b;
+  --gold: #ffc800; --gold-d: #e5a000; --orange: #ff9600; --locked: #e5e5e5; --locked-d: #b7b7b7; --lock-ic: #afafaf;
+  --okbg: #d7ffb8; --badbg: #ffdfe0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131f24; --panel: #131f24; --line: #37464f; --text: #f1f7fb; --muted: #8fa2ad; --soft: #1b2a31;
+    --locked: #37464f; --locked-d: #24323a; --lock-ic: #52656d; --okbg: #1e3a16; --badbg: #3f1d1f;
+  }
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font: 700 16px/1.4 Nunito, system-ui, sans-serif; }
+button { font: inherit; }
+.b3 { border: 0; border-radius: 16px; padding: 13px 18px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; color: #fff; background: var(--green); box-shadow: 0 4px 0 var(--green-d); transition: transform .06s, box-shadow .06s; }
+.b3:active { transform: translateY(4px); box-shadow: 0 0 0 var(--green-d); }
+.b3.blue { background: var(--blue); box-shadow: 0 4px 0 var(--blue-d); }
+.b3.red { background: var(--red); box-shadow: 0 4px 0 var(--red-d); }
+.b3.ghost { background: var(--panel); color: var(--blue); border: 2px solid var(--line); box-shadow: 0 4px 0 var(--line); }
+.b3:disabled { background: var(--locked); color: var(--locked-d); box-shadow: 0 4px 0 var(--locked-d); cursor: default; }
+
+/* rakenne: vasen navi, polku, oikea sivupalkki */
+#app { display: grid; grid-template-columns: 240px minmax(0, 600px) 340px; gap: 24px; justify-content: center; }
+#nav { position: sticky; top: 0; height: 100vh; border-right: 2px solid var(--line); padding: 22px 14px; display: flex; flex-direction: column; gap: 6px; }
+#nav .logo { font-weight: 900; font-size: 26px; color: var(--green); letter-spacing: -.02em; padding: 0 10px 18px; line-height: 1.05; }
+#nav .logo small { display: block; font-size: 12px; color: var(--muted); letter-spacing: .04em; font-weight: 800; }
+#nav a, #nav button.nv { display: flex; gap: 12px; align-items: center; padding: 11px 14px; border-radius: 12px; border: 2px solid transparent; color: var(--muted); text-decoration: none; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; font-size: 14px; background: none; cursor: pointer; text-align: left; }
+#nav a:hover, #nav button.nv:hover { background: var(--soft); }
+#nav .on { color: var(--blue); border-color: #84d8ff; background: rgba(28,176,246,.08); }
+#nav .ico { width: 30px; text-align: center; font-size: 20px; }
+
+#path { padding: 20px 0 120px; }
+#top { position: sticky; top: 0; z-index: 5; background: var(--bg); display: none; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 2px solid var(--line); }
+.stat { display: inline-flex; gap: 6px; align-items: center; font-weight: 800; }
+.stat.fire { color: var(--orange); }
+.stat.gem { color: var(--blue); }
+.stat.xp { color: var(--gold-d); }
+.course { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border: 0; background: none; color: var(--text); font-weight: 800; padding: 4px; }
+.flag { width: 34px; height: 26px; border-radius: 6px; display: grid; place-items: center; font-weight: 900; font-size: 12px; color: #fff; box-shadow: inset 0 -3px 0 rgba(0,0,0,.2); }
+
+.unit { margin: 0 0 18px; }
+.banner { border-radius: 16px; padding: 16px 18px; color: #fff; display: flex; justify-content: space-between; align-items: center; gap: 12px; box-shadow: 0 4px 0 rgba(0,0,0,.18); position: sticky; top: 8px; z-index: 3; }
+.banner .k { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+.banner .t { font-size: 22px; font-weight: 900; line-height: 1.15; }
+.banner .s { font-size: 14px; font-weight: 700; opacity: .92; margin-top: 2px; }
+.banner button { flex: none; border: 2px solid rgba(255,255,255,.45); background: rgba(255,255,255,.12); color: #fff; border-radius: 14px; padding: 10px 12px; font-weight: 800; letter-spacing: .05em; cursor: pointer; text-transform: uppercase; font-size: 13px; box-shadow: 0 3px 0 rgba(0,0,0,.2); }
+.section { text-align: center; margin: 34px 0 18px; display: flex; align-items: center; gap: 14px; color: var(--muted); font-weight: 800; letter-spacing: .06em; text-transform: uppercase; font-size: 14px; }
+.section::before, .section::after { content: ""; flex: 1; height: 2px; background: var(--line); }
+.track { position: relative; display: flex; flex-direction: column; align-items: center; padding: 30px 0 8px; }
+.node { position: relative; width: 72px; height: 66px; margin: 9px 0; border: 0; border-radius: 50%; cursor: pointer; display: grid; place-items: center; color: #fff; background: var(--c); box-shadow: 0 7px 0 var(--cd); transition: transform .06s, box-shadow .06s; }
+.node:active { transform: translateY(5px); box-shadow: 0 2px 0 var(--cd); }
+.node svg { width: 32px; height: 32px; }
+.node.locked { --c: var(--locked); --cd: var(--locked-d); color: var(--lock-ic); }
+.node.done { --c: var(--gold); --cd: var(--gold-d); }
+.node.trophy { border-radius: 18px; width: 70px; }
+.node.legend { --c: #ce82ff; --cd: #a560e8; }
+.ring { position: absolute; width: 94px; height: 94px; left: 50%; top: 50%; transform: translate(-50%, -46%); pointer-events: none; }
+.bubble { position: absolute; bottom: calc(100% + 16px); left: 50%; transform: translateX(-50%); background: var(--panel); color: var(--cc); border: 2px solid var(--line); border-radius: 12px; padding: 8px 12px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; animation: bob 1.2s ease-in-out infinite; font-size: 15px; pointer-events: none; }
+.bubble::after { content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 9px solid transparent; border-top-color: var(--line); }
+@keyframes bob { 50% { transform: translate(-50%, -6px); } }
+
+/* ponnahdus solmun alla */
+#pop { position: absolute; z-index: 6; width: 300px; border-radius: 16px; padding: 16px; color: #fff; display: none; box-shadow: 0 6px 0 rgba(0,0,0,.18); }
+#pop::before { content: ""; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); border: 10px solid transparent; border-bottom-color: var(--pc); }
+#pop.locked { background: var(--soft) !important; color: var(--muted); border: 2px solid var(--line); --pc: var(--line); }
+#pop h3 { margin: 0 0 4px; font-size: 18px; font-weight: 900; }
+#pop p { margin: 0 0 12px; font-size: 14px; font-weight: 700; opacity: .92; }
+#pop .b3 { width: 100%; background: #fff; color: var(--pc); box-shadow: 0 4px 0 rgba(0,0,0,.18); }
+#pop.locked .b3 { background: var(--locked); color: var(--locked-d); }
+
+/* oikea sivupalkki */
+#side { padding: 20px 0; position: sticky; top: 0; height: 100vh; overflow: auto; }
+.card { border: 2px solid var(--line); border-radius: 16px; padding: 16px 18px; margin-bottom: 16px; }
+.card h4 { margin: 0 0 10px; font-size: 19px; font-weight: 900; }
+.card .row { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 15px; margin: 4px 0; }
+.card .row b { color: var(--text); }
+.bar { height: 16px; border-radius: 99px; background: var(--line); overflow: hidden; margin: 8px 0; }
+.bar i { display: block; height: 100%; background: var(--gold); border-radius: 99px; box-shadow: inset 0 4px 0 rgba(255,255,255,.3); }
+.stats { display: flex; gap: 18px; justify-content: flex-start; margin: 4px 2px 14px; font-size: 17px; }
+.small { font-size: 13px; color: var(--muted); font-weight: 700; }
+.links a { color: var(--blue); text-decoration: none; font-weight: 800; font-size: 13px; letter-spacing: .05em; text-transform: uppercase; margin-right: 14px; }
+
+/* kurssivalinta ja opas */
+.modal { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.45); display: none; align-items: flex-start; justify-content: center; overflow: auto; padding: 40px 14px; }
+.modal.open { display: flex; }
+.sheet { background: var(--panel); border-radius: 18px; padding: 24px; width: min(760px, 100%); border: 2px solid var(--line); }
+.sheet h2 { margin: 0 0 6px; font-size: 26px; font-weight: 900; }
+.courses { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 16px; }
+.courses button { border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 16px; background: var(--panel); color: var(--text); padding: 16px 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px; font-weight: 800; }
+.courses button:hover { background: var(--soft); }
+.courses .flag { width: 64px; height: 48px; font-size: 18px; border-radius: 10px; }
+.guide h3 { margin: 18px 0 4px; font-size: 18px; font-weight: 900; }
+.guide p { margin: 4px 0; font-weight: 600; color: var(--text); }
+.guide .tag { display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+
+/* oppitunti */
+#lesson { position: fixed; inset: 0; z-index: 30; background: var(--bg); display: none; flex-direction: column; }
+#lesson.open { display: flex; }
+#lhead { display: flex; gap: 16px; align-items: center; padding: 22px max(16px, calc(50% - 480px)); }
+#lhead .x { border: 0; background: none; color: var(--muted); font-size: 28px; cursor: pointer; line-height: 1; }
+#lhead .bar { flex: 1; margin: 0; }
+#lhead .bar i { background: var(--green); transition: width .3s; }
+#lbody { flex: 1; overflow: auto; padding: 10px 16px 20px; display: flex; justify-content: center; }
+#lbody .q { width: min(600px, 100%); }
+#lbody h2 { font-size: 26px; font-weight: 900; margin: 18px 0 18px; }
+#lbody .prompt { border: 2px solid var(--line); border-radius: 16px; padding: 16px 18px; font-size: 18px; font-weight: 700; margin-bottom: 18px; }
+#lbody .prompt .kw { font-size: 26px; font-weight: 900; color: var(--blue); }
+.opts { display: grid; gap: 12px; }
+.opt { text-align: left; border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 14px; background: var(--panel); color: var(--text); padding: 14px 16px; cursor: pointer; font-weight: 700; font-size: 16px; display: flex; gap: 14px; align-items: center; }
+.opt .n { flex: none; width: 30px; height: 30px; border: 2px solid var(--line); border-radius: 8px; display: grid; place-items: center; font-size: 14px; color: var(--muted); }
+.opt.sel { border-color: #84d8ff; background: rgba(28,176,246,.1); color: var(--blue-d); }
+.opt.right { border-color: var(--green); background: var(--okbg); color: var(--green-d); }
+.opt.wrong { border-color: var(--red); background: var(--badbg); color: var(--red-d); }
+#lfoot { border-top: 2px solid var(--line); padding: 20px max(16px, calc(50% - 480px)); display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 120px; }
+#lfoot.ok { background: var(--okbg); border-color: transparent; }
+#lfoot.bad { background: var(--badbg); border-color: transparent; }
+#lfoot .fb { font-size: 22px; font-weight: 900; }
+#lfoot.ok .fb { color: var(--green-d); }
+#lfoot.bad .fb { color: var(--red-d); }
+#lfoot .fb small { display: block; font-size: 15px; font-weight: 700; color: var(--text); margin-top: 4px; max-width: 640px; }
+#lfoot .b3 { min-width: 170px; }
+.done-screen { text-align: center; padding-top: 40px; }
+.done-screen .big { font-size: 34px; font-weight: 900; color: var(--gold-d); margin: 10px 0; }
+.boxes { display: flex; gap: 14px; justify-content: center; margin: 26px 0; flex-wrap: wrap; }
+.boxes div { border: 2px solid var(--c); border-radius: 16px; min-width: 130px; overflow: hidden; }
+.boxes div b { display: block; background: var(--c); color: #fff; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; padding: 5px; }
+.boxes div span { display: block; padding: 12px; font-size: 22px; font-weight: 900; color: var(--c); }
+
+@media (max-width: 1180px) { #app { grid-template-columns: 90px minmax(0, 600px) 300px; } #nav .lab, #nav .logo small { display: none; } #nav .logo { font-size: 16px; } }
+@media (max-width: 980px) { #app { grid-template-columns: minmax(0, 600px); } #nav, #side { display: none; } #top { display: flex; } #path { padding: 12px 12px 120px; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <nav id="nav">
+    <div class="logo">taitopolku<small>peruskoulu · POPS 2014</small></div>
+    <button class="nv on" id="navpath"><span class="ico">🏠</span><span class="lab">Oppiminen</span></button>
+    <button class="nv" id="navcourse"><span class="ico">🎓</span><span class="lab">Vaihda kurssia</span></button>
+    <a href="../"><span class="ico">✦</span><span class="lab">Path of Exile</span></a>
+    <a href="../diablo/"><span class="ico">⚔</span><span class="lab">Diablo II</span></a>
+    <a href="https://github.com/pasiaj/taitopuu" target="_blank" rel="noopener"><span class="ico">⌥</span><span class="lab">GitHub</span></a>
+  </nav>
+  <main>
+    <div id="top">
+      <button class="course" id="tcourse"></button>
+      <span class="stat fire" id="tstreak"></span>
+      <span class="stat xp" id="txp"></span>
+    </div>
+    <div id="path"></div>
+  </main>
+  <aside id="side"></aside>
+</div>
+<div id="pop"></div>
+
+<div class="modal" id="mcourse"><div class="sheet">
+  <h2>Valitse kurssi</h2>
+  <div class="small">Jokainen kurssi on yksi peruskoulun osaamisalue. Polku etenee luokasta 1 luokkaan 9, ja jokainen pallo on yksi taito.</div>
+  <div id="courses"></div>
+</div></div>
+<div class="modal" id="mguide"><div class="sheet guide" id="guide"></div></div>
+
+<div id="lesson">
+  <div id="lhead"><button class="x" id="lx" aria-label="Lopeta">✕</button><div class="bar"><i id="lprog" style="width:0"></i></div></div>
+  <div id="lbody"></div>
+  <div id="lfoot"></div>
+</div>
+
+<script src="../data.js"></script>
+<script>
+(function () {
+  'use strict';
+  const D = window.TAITOPUU;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ------------------------------------------------------------- malli */
+  const by = new Map(D.nodes.map(n => [n.id, Object.assign({ kids: [] }, n)]));
+  const N = [...by.values()];
+  N.forEach(n => { if (n.p && by.has(n.p)) by.get(n.p).kids.push(n); });
+  N.forEach(n => n.kids.sort((a, b) => a.id.localeCompare(b.id, 'fi', { numeric: true })));
+  const AREAS = D.ryhmat.flatMap(g => g.a).map(id => by.get(id));
+  const PAL = [['#58cc02', '#58a700'], ['#ce82ff', '#a560e8'], ['#00cd9c', '#00a37d'], ['#1cb0f6', '#1899d6'], ['#ff86d0', '#e05db3'], ['#ff9600', '#e07f00'], ['#cc348d', '#a3236f'], ['#2b70c9', '#1f5aa8'], ['#ff4b4b', '#d33131']];
+  const flagColor = a => `hsl(${AREAS.indexOf(a) / AREAS.length * 360},62%,48%)`;
+  const SECTIONS = [[1, 2, 'Alkuopetus'], [3, 6, 'Vuosiluokat 3–6'], [7, 9, 'Yläkoulu']];
+  const stageOf = g => g <= 2 ? '1–2' : g <= 6 ? '3–6' : '7–9';
+
+  // Polku: yksikkö = luokka; pallo = osataito, jonka atomeja opitaan sillä luokalla;
+  // yksikön lopussa pokaali (kertaus); osion lopussa legendaarinen huipputaso.
+  function buildPath(area) {
+    const os = area.kids.flatMap(ai => ai.kids);
+    const units = [];
+    for (let g = 1; g <= 9; g++) {
+      const nodes = [];
+      os.forEach(o => {
+        const atoms = o.kids.filter(t => t.s === g);
+        if (atoms.length) nodes.push({ key: `${o.id}@${g}`, type: 'skill', os: o, atoms, g });
+      });
+      if (!nodes.length) continue;
+      const all = nodes.flatMap(n => n.atoms);
+      if (all.length >= 3) nodes.push({ key: `kertaus@${g}`, type: 'trophy', atoms: all, g });
+      units.push({ g, nodes });
+    }
+    // legendaariset: osion lopussa huipputaso (osataitojen "osaat kun" -kuvaukset)
+    SECTIONS.forEach(([a, b]) => {
+      const u = units.filter(x => x.g >= a && x.g <= b).pop();
+      if (!u) return;
+      const skills = [...new Set(units.filter(x => x.g >= a && x.g <= b).flatMap(x => x.nodes.filter(n => n.os).map(n => n.os)))].filter(o => o.o);
+      if (skills.length >= 3) u.nodes.push({ key: `huippu@${b}`, type: 'legend', skills, g: u.g, sec: b });
+    });
+    return units;
+  }
+
+  /* ------------------------------------------------------------- tallennus */
+  const KEY = 'taitopolku-v1';
+  let S = { xp: 0, done: {}, days: [], today: 0, todayDate: '' };
+  try { S = Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+  const day = d => d.toISOString().slice(0, 10);
+  function streak() {
+    const set = new Set(S.days); let n = 0; const d = new Date();
+    if (!set.has(day(d))) d.setDate(d.getDate() - 1);   // tämän päivän puuttuminen ei vielä katkaise putkea
+    while (set.has(day(d))) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+  function addXp(x) {
+    const t = day(new Date());
+    if (S.todayDate !== t) { S.todayDate = t; S.today = 0; }
+    S.xp += x; S.today += x;
+    if (!S.days.includes(t)) S.days.push(t);
+    save();
+  }
+  const GOAL = 30;
+
+  /* ------------------------------------------------------------- tila */
+  let area = null, units = [], flat = [];
+  function setArea(a) {
+    area = a; units = buildPath(a); flat = units.flatMap(u => u.nodes);
+    try { localStorage.setItem(KEY + '-area', a.id); } catch (e) {}
+    history.replaceState(null, '', '#' + a.id);
+    render();
+  }
+  const isDone = n => !!S.done[area.id + ':' + n.key];
+  const currentIdx = () => { const i = flat.findIndex(n => !isDone(n)); return i < 0 ? flat.length : i; };
+
+  /* ------------------------------------------------------------- piirto */
+  const ICON = {
+    star: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg>',
+    check: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    lock: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 10V8a5 5 0 0110 0v2h1a1 1 0 011 1v9a1 1 0 01-1 1H6a1 1 0 01-1-1v-9a1 1 0 011-1zm2 0h6V8a3 3 0 00-6 0z"/></svg>',
+    trophy: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 3h12v2h3v3a4 4 0 01-4 4h-.3A6 6 0 0113 15.9V18h3v3H8v-3h3v-2.1A6 6 0 017.3 12H7a4 4 0 01-4-4V5h3zm0 4H5v1a2 2 0 001.2 1.8A6 6 0 016 9zm12 0v2c0 .3 0 .5-.1.8A2 2 0 0019 8V7z"/></svg>',
+    crown: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 12H5z"/></svg>',
+    book: '📖'
+  };
+  const OFF = [0, 44, 70, 44, 0, -44, -70, -44];
+
+  function render() {
+    renderPath(); renderSide(); renderTop();
+  }
+  function renderTop() {
+    $('tcourse').innerHTML = `<span class="flag" style="background:${flagColor(area)}">${esc(area.id)}</span>`;
+    $('tstreak').textContent = `🔥 ${streak()}`;
+    $('txp').textContent = `⚡ ${S.xp} XP`;
+  }
+  function renderPath() {
+    const cur = currentIdx();
+    let h = '', idx = 0, secShown = new Set();
+    units.forEach((u, ui) => {
+      const si = SECTIONS.findIndex(([a, b]) => u.g >= a && u.g <= b);
+      if (!secShown.has(si)) { secShown.add(si); h += `<div class="section">Osio ${si + 1}: ${esc(SECTIONS[si][2])}</div>`; }
+      const [c, cd] = PAL[(u.g - 1) % PAL.length];
+      const aiheet = [...new Set(u.nodes.filter(n => n.os).map(n => by.get(n.os.p).n))];
+      h += `<div class="unit"><div class="banner" style="background:${c}"><div><div class="k">Osio ${si + 1}, yksikkö ${ui + 1}</div><div class="t">${u.g}. luokka</div><div class="s">${esc(aiheet.slice(0, 3).join(' · '))}${aiheet.length > 3 ? ' …' : ''}</div></div><button data-guide="${ui}">${ICON.book} Opas</button></div><div class="track">`;
+      u.nodes.forEach((n, k) => {
+        const i = idx++;
+        const state = isDone(n) ? 'done' : i === cur ? 'cur' : 'locked';
+        const off = OFF[(k + (ui % 2) * 4) % OFF.length];
+        const typ = n.type === 'trophy' ? ' trophy' : n.type === 'legend' ? ' legend' : '';
+        const icon = n.type === 'trophy' ? ICON.trophy : n.type === 'legend' ? ICON.crown : state === 'done' ? ICON.check : state === 'locked' ? ICON.lock : ICON.star;
+        const style = `--c:${c};--cd:${cd};--cc:${c};transform:translateX(${off}px)`;
+        h += `<div style="${style.replace(/transform.*/, '')};position:relative;transform:translateX(${off}px)${state === 'cur' ? (k > 0 ? ';margin-top:54px' : ';margin-top:44px') : ''}">`;
+        if (state === 'cur') h += `<svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="var(--line)" stroke-width="8"/><circle cx="50" cy="50" r="45" fill="none" stroke="${c}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${2 * Math.PI * 45}" stroke-dashoffset="${2 * Math.PI * 45 * 0.85}" transform="rotate(-90 50 50)"/></svg><div class="bubble">${i === 0 ? 'Aloita' : 'Seuraava'}</div>`;
+        h += `<button class="node ${state === 'cur' ? '' : state}${typ}" data-i="${i}" title="${esc(n.os ? n.os.n : n.type === 'trophy' ? 'Kertaus' : 'Huipputaso')}">${icon}</button></div>`;
+      });
+      h += `</div></div>`;
+    });
+    if (!units.length) h = '<p class="small">Tällä kurssilla ei ole luokkiin sidottuja käsitteitä.</p>';
+    $('path').innerHTML = h;
+    $('path').querySelectorAll('.node').forEach(b => b.onclick = e => { e.stopPropagation(); openPop(+b.dataset.i, b); });
+    $('path').querySelectorAll('[data-guide]').forEach(b => b.onclick = () => openGuide(units[+b.dataset.guide]));
+  }
+
+  function renderSide() {
+    const total = flat.length, done = flat.filter(isDone).length;
+    const today = S.todayDate === day(new Date()) ? S.today : 0;
+    let h = `<div class="stats"><span class="stat"><span class="flag" style="background:${flagColor(area)}">${esc(area.id)}</span></span><span class="stat fire">🔥 ${streak()}</span><span class="stat xp">⚡ ${S.xp}</span></div>`;
+    h += `<div class="card"><h4>Päivän tavoite</h4><div class="row"><span>Kerää ${GOAL} XP</span><b>${Math.min(today, GOAL)} / ${GOAL}</b></div><div class="bar"><i style="width:${Math.min(100, today / GOAL * 100)}%"></i></div></div>`;
+    h += `<div class="card"><h4>${esc(area.n)}</h4><div class="row"><span>Edistyminen</span><b>${done} / ${total}</b></div><div class="bar"><i style="width:${total ? done / total * 100 : 0}%;background:var(--green)"></i></div>`;
+    if (area.h) h += `<div class="small" style="margin-top:10px">Polun päässä: ${esc(area.h)}</div>`;
+    h += `</div>`;
+    h += `<div class="card"><h4>Mikä tämä on?</h4><div class="small">Peruskoulun opetussuunnitelma (POPS 2014) oppimispolkuna. Jokainen yksikkö on yksi luokka, ja jokainen pallo on taito, jonka käsitteitä sillä luokalla opitaan. Oppitunnin kysymykset tulevat taitopuun käsitteistä ja niiden kuvauksista. Edistyminen tallentuu vain tähän selaimeen.</div></div>`;
+    h += `<div class="links"><a href="../">Taitopuu</a><a href="../diablo/">Diablo II</a><a href="https://github.com/pasiaj/taitopuu" target="_blank" rel="noopener">GitHub</a></div>`;
+    $('side').innerHTML = h;
+  }
+
+  /* -------------------------------------------------------------- ponnahdus */
+  function openPop(i, btn) {
+    const n = flat[i], P = $('pop'), cur = currentIdx(), done = isDone(n);
+    const u = units.find(x => x.nodes.includes(n)); const [c] = PAL[(u.g - 1) % PAL.length];
+    const locked = !done && i > cur;
+    let title, desc;
+    if (n.type === 'skill') { title = n.os.n; desc = `${by.get(n.os.p).n} · ${n.g}. luokka · ${n.atoms.length} käsitettä`; }
+    else if (n.type === 'trophy') { title = `Kertaus: ${n.g}. luokka`; desc = `Koko yksikön ${n.atoms.length} käsitettä sekaisin`; }
+    else { title = 'Huipputaso'; desc = `Tunnista ${Math.min(8, n.skills.length)} taitoa sen perusteella, mitä huippuoppilas osaa`; }
+    P.className = locked ? 'locked' : '';
+    P.style.background = c; P.style.setProperty('--pc', locked ? 'var(--line)' : c);
+    P.innerHTML = `<h3>${esc(title)}</h3><p>${esc(desc)}</p>${locked ? '<p>Suorita ensin aiemmat oppitunnit, tai hyppää suoraan tähän.</p>' : ''}<button class="b3">${done ? 'Kertaa +5 XP' : locked ? 'Hyppää tähän' : 'Aloita +10 XP'}</button>`;
+    const r = btn.getBoundingClientRect();
+    P.style.display = 'block';
+    P.style.left = Math.max(8, Math.min(innerWidth - 308, r.left + r.width / 2 - 150 + scrollX)) + 'px';
+    P.style.top = (r.bottom + 16 + scrollY) + 'px';
+    P.querySelector('button').onclick = e => { e.stopPropagation(); P.style.display = 'none'; startLesson(n, done); };
+  }
+  document.addEventListener('click', e => { if (!$('pop').contains(e.target)) $('pop').style.display = 'none'; });
+
+  /* --------------------------------------------------------------- opas */
+  function openGuide(u) {
+    const st = stageOf(u.g);
+    let h = `<span class="tag">Yksikön opas</span><h2>${u.g}. luokka: ${esc(area.n)}</h2><div class="small">Mitä tällä luokalla opitaan ja millä tasolla taidot ovat vaiheessa ${st}.</div>`;
+    u.nodes.filter(n => n.os).forEach(n => {
+      const o = n.os;
+      h += `<h3>${esc(o.n)}</h3><span class="tag">${esc(by.get(o.p).n)} · alkaa ${o.s}. luokalla</span>`;
+      if (o.tl && o.tl[st]) h += `<p>${esc(o.tl[st])}</p>`; else if (o.k) h += `<p>${esc(o.k)}</p>`;
+      h += `<p class="small">Käsitteet: ${n.atoms.map(t => esc(t.n)).join(', ')}</p>`;
+    });
+    h += `<p style="margin-top:20px"><button class="b3 blue" id="gclose">Selvä</button></p>`;
+    $('guide').innerHTML = h; $('mguide').classList.add('open');
+    $('gclose').onclick = () => $('mguide').classList.remove('open');
+  }
+  $('mguide').onclick = e => { if (e.target === $('mguide')) $('mguide').classList.remove('open'); };
+
+  /* ----------------------------------------------------------- kurssivalinta */
+  function openCourses() {
+    let h = '';
+    D.ryhmat.forEach(g => {
+      h += `<h3 class="small" style="margin:20px 0 0;text-transform:uppercase;letter-spacing:.08em">${esc(g.n)}</h3><div class="courses">`;
+      g.a.forEach(id => { const a = by.get(id); h += `<button data-a="${id}"><span class="flag" style="background:${flagColor(a)}">${esc(id)}</span>${esc(a.n)}</button>`; });
+      h += `</div>`;
+    });
+    $('courses').innerHTML = h; $('mcourse').classList.add('open');
+    $('courses').querySelectorAll('button').forEach(b => b.onclick = () => { $('mcourse').classList.remove('open'); setArea(by.get(b.dataset.a)); scrollToCurrent(); });
+  }
+  $('mcourse').onclick = e => { if (e.target === $('mcourse') && area) $('mcourse').classList.remove('open'); };
+  $('navcourse').onclick = openCourses; $('tcourse').onclick = openCourses;
+  $('navpath').onclick = () => scrollToCurrent();
+  function scrollToCurrent() {
+    const b = $('path').querySelector('.node:not(.done):not(.locked)');
+    if (b) b.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  /* ------------------------------------------------------------ oppitunti */
+  const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  // piilota käsitteen nimi sen omasta kuvauksesta, ettei vastaus paljastu
+  function mask(text, name) {
+    let t = text;
+    name.split(/[\s,–-]+/).filter(w => w.length > 4).forEach(w => {
+      const stem = w.slice(0, Math.max(4, w.length - 3)).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      t = t.replace(new RegExp(stem + '\\p{L}*', 'giu'), '___');
+    });
+    return t;
+  }
+  const short = s => { s = s || ''; const i = s.indexOf('. '); return i > 30 && i < 170 ? s.slice(0, i + 1) : s.length > 170 ? s.slice(0, 167) + '…' : s; };
+  function pool(item) {
+    // väärät vaihtoehdot: saman aiheen, sitten saman alueen käsitteet
+    const os = item.t === 1 ? item : by.get(item.p);
+    const ai = by.get(os.p);
+    const same = item.t === 1 ? ai.kids : ai.kids.flatMap(o => o.kids);
+    const wide = item.t === 1 ? area.kids.flatMap(x => x.kids) : area.kids.flatMap(x => x.kids.flatMap(o => o.kids));
+    return shuffle(same.filter(x => x !== item && x.k)).concat(shuffle(wide.filter(x => x !== item && x.k && !same.includes(x))));
+  }
+  function makeQuestions(n) {
+    let items;
+    if (n.type === 'legend') items = shuffle(n.skills).slice(0, 8);
+    else if (n.type === 'trophy') items = shuffle(n.atoms).slice(0, 8);
+    else items = n.atoms.concat(n.atoms.length < 4 ? [n.os] : []);
+    return shuffle(items).map((it, i) => {
+      const wrong = pool(it).slice(0, 3);
+      const kind = n.type === 'legend' ? 'huippu' : i % 2 ? 'def2name' : 'name2def';
+      return { it, kind, opts: shuffle([it, ...wrong]) };
+    });
+  }
+  let L = null;
+  function startLesson(n, review) {
+    L = { n, review, qs: makeQuestions(n), i: 0, right: 0, wrong: 0, total: 0, sel: null, checked: false };
+    $('lesson').classList.add('open'); document.body.style.overflow = 'hidden';
+    showQ();
+  }
+  $('lx').onclick = () => { $('lesson').classList.remove('open'); document.body.style.overflow = ''; L = null; };
+  function showQ() {
+    const q = L.qs[L.i];
+    $('lprog').style.width = (L.i / L.qs.length * 100) + '%';
+    let h = '<div class="q">';
+    if (q.kind === 'def2name') {
+      h += `<h2>Mikä käsite on kyseessä?</h2><div class="prompt">${esc(mask(q.it.k, q.it.n))}</div>`;
+      h += `<div class="opts">${q.opts.map((o, k) => `<button class="opt" data-k="${k}"><span class="n">${k + 1}</span>${esc(o.n)}</button>`).join('')}</div>`;
+    } else if (q.kind === 'name2def') {
+      h += `<h2>Valitse oikea kuvaus</h2><div class="prompt"><span class="kw">${esc(q.it.n)}</span></div>`;
+      h += `<div class="opts">${q.opts.map((o, k) => `<button class="opt" data-k="${k}"><span class="n">${k + 1}</span>${esc(short(mask(o.k, o.n)))}</button>`).join('')}</div>`;
+    } else {
+      h += `<h2>Minkä taidon huippuoppilas hallitsee, kun hän…</h2><div class="prompt">${esc(mask(q.it.h || q.it.o, q.it.n))}</div>`;
+      h += `<div class="opts">${q.opts.map((o, k) => `<button class="opt" data-k="${k}"><span class="n">${k + 1}</span>${esc(o.n)}</button>`).join('')}</div>`;
+    }
+    h += '</div>';
+    $('lbody').innerHTML = h;
+    L.sel = null; L.checked = false;
+    $('lbody').querySelectorAll('.opt').forEach(b => b.onclick = () => pick(+b.dataset.k));
+    foot();
+  }
+  function pick(k) {
+    if (L.checked) return;
+    L.sel = k;
+    $('lbody').querySelectorAll('.opt').forEach((b, j) => b.classList.toggle('sel', j === k));
+    foot();
+  }
+  function foot() {
+    const F = $('lfoot'); F.className = '';
+    if (!L.checked) {
+      F.innerHTML = `<button class="b3 ghost" id="skip">Ohita</button><button class="b3" id="chk" ${L.sel == null ? 'disabled' : ''}>Tarkista</button>`;
+      $('skip').onclick = () => { L.sel = -1; check(); };
+      $('chk').onclick = check;
+    }
+  }
+  function check() {
+    const q = L.qs[L.i]; L.checked = true; L.total++;
+    const ok = L.sel >= 0 && q.opts[L.sel] === q.it;
+    const btns = $('lbody').querySelectorAll('.opt');
+    btns.forEach((b, j) => { if (q.opts[j] === q.it) b.classList.add('right'); else if (j === L.sel) b.classList.add('wrong'); });
+    if (ok) L.right++; else { L.wrong++; if (!q.again) L.qs.push(Object.assign({}, q, { again: true, opts: shuffle(q.opts) })); }
+    const F = $('lfoot'); F.className = ok ? 'ok' : 'bad';
+    const info = q.it.ex ? `Esimerkki: ${q.it.ex}` : q.it.k || '';
+    F.innerHTML = `<div class="fb">${ok ? ['Hienoa!', 'Oikein!', 'Mahtavaa!', 'Juuri niin!'][L.right % 4] : 'Oikea vastaus:'}<small>${ok ? esc(short(info)) : `<b>${esc(q.it.n)}</b>: ${esc(short(q.it.k || q.it.o))}`}</small></div><button class="b3 ${ok ? '' : 'red'}" id="cont">Jatka</button>`;
+    $('cont').onclick = next; $('cont').focus();
+  }
+  function next() {
+    L.i++;
+    if (L.i < L.qs.length) return showQ();
+    finish();
+  }
+  function finish() {
+    const n = L.n, acc = Math.round(L.right / Math.max(1, L.total) * 100);
+    const xp = L.review ? 5 : 10 + (L.wrong === 0 ? 5 : 0);
+    S.done[area.id + ':' + n.key] = Date.now();
+    addXp(xp);
+    $('lprog').style.width = '100%';
+    $('lbody').innerHTML = `<div class="q done-screen"><div style="font-size:64px">${n.type === 'legend' ? '👑' : n.type === 'trophy' ? '🏆' : '⭐'}</div><div class="big">${L.review ? 'Kertaus valmis!' : 'Oppitunti valmis!'}</div><div class="small">${esc(n.os ? n.os.n : n.type === 'trophy' ? n.g + '. luokan kertaus' : 'Huipputaso')}</div>
+      <div class="boxes"><div style="--c:var(--gold)"><b>XP yhteensä</b><span>⚡ ${xp}</span></div><div style="--c:var(--green)"><b>Tarkkuus</b><span>🎯 ${acc} %</span></div><div style="--c:var(--orange)"><b>Putki</b><span>🔥 ${streak()}</span></div></div></div>`;
+    const F = $('lfoot'); F.className = ''; F.innerHTML = `<span></span><button class="b3" id="cont">Jatka</button>`;
+    $('cont').onclick = () => { $('lx').onclick(); render(); scrollToCurrent(); };
+  }
+  document.addEventListener('keydown', e => {
+    if (!L || !$('lesson').classList.contains('open')) return;
+    if (/^[1-4]$/.test(e.key) && !L.checked) pick(+e.key - 1);
+    if (e.key === 'Enter') { const b = $('cont') || $('chk'); if (b && !b.disabled) b.click(); }
+    if (e.key === 'Escape') $('lx').onclick();
+  });
+
+  /* --------------------------------------------------------------- käynnistys */
+  let start = by.get(decodeURIComponent(location.hash.slice(1)));
+  if (!start) { try { start = by.get(localStorage.getItem(KEY + '-area')); } catch (e) {} }
+  if (start && start.t === 3) { setArea(start); setTimeout(scrollToCurrent, 200); }
+  else { area = AREAS[0]; units = buildPath(area); flat = units.flatMap(u => u.nodes); render(); openCourses(); }
+  window.addEventListener('hashchange', () => { const a = by.get(decodeURIComponent(location.hash.slice(1))); if (a && a.t === 3 && a !== area) setArea(a); });
+})();
+</script>
+</body>
+</html>
