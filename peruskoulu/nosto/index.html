@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taitopuu: nosto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Kevyt upotettava nosto Path of Exile -puusta artikkeleihin.
+ * ?nayta=solmu&id=MA.3.6 | luokat | polku&id=HI.1.4 | oppiaine&tag=YO | kortti&id=MA.3.6 | alue&id=LT
+ */
+:root { --bg: #07080b; --line: #4a3f2a; --gold: #d9b45c; --gold-2: #f1d27a; --text: #e9dfc8; --muted: #a39780; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.5 Inter, system-ui, sans-serif; overflow: hidden; }
+canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+#cap { position: absolute; left: 12px; top: 10px; right: 12px; display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; pointer-events: none; }
+#cap .t { font: 600 15px Cinzel, Georgia, serif; color: var(--gold-2); text-shadow: 0 0 8px #000, 0 0 2px #000; }
+#cap .s { font-size: 12px; color: var(--muted); text-shadow: 0 0 6px #000; }
+#badge { font: 700 22px Cinzel, serif; color: var(--gold-2); text-shadow: 0 0 12px rgba(217,180,92,.5), 0 0 3px #000; text-align: right; white-space: nowrap; }
+#badge small { display: block; font: 500 11px Inter, sans-serif; color: var(--muted); }
+#open { position: absolute; right: 10px; bottom: 8px; font-size: 12px; color: var(--muted); text-decoration: none; background: rgba(16,14,12,.85); border: 1px solid var(--line); border-radius: 5px; padding: 4px 9px; }
+#open:hover { color: var(--gold-2); border-color: var(--gold); }
+#list { position: absolute; left: 12px; bottom: 40px; margin: 0; padding: 0; list-style: none; font-size: 12.5px; pointer-events: none; }
+#list li { color: #f4ead0; font-weight: 500; text-shadow: 0 0 6px #000, 0 0 2px #000; animation: lin .4s ease-out; }
+#list li small { color: var(--muted); }
+@keyframes lin { from { opacity: 0; transform: translateX(-8px); } }
+#replay { position: absolute; left: 10px; bottom: 8px; font-size: 12px; color: var(--muted); background: rgba(16,14,12,.85); border: 1px solid var(--line); border-radius: 5px; padding: 4px 9px; cursor: pointer; font-family: inherit; display: none; }
+#replay:hover { color: var(--gold-2); border-color: var(--gold); }
+/* kortti: tietopaneeli ilman canvasia */
+#card { position: absolute; inset: 0; overflow: auto; padding: 16px 18px 52px; display: none; background: radial-gradient(ellipse at 20% 0%, rgba(70,58,34,.35), transparent 60%), var(--bg); }
+#card .kind { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+#card h2 { margin: 2px 0 4px; font: 700 21px/1.2 Cinzel, Georgia, serif; color: var(--gold-2); }
+#card .crumbs { font-size: 12px; color: #8cc8ff; margin-bottom: 8px; }
+#card h3 { font: 600 12.5px Cinzel, serif; color: var(--gold); margin: 14px 0 6px; border-bottom: 1px solid var(--line); padding-bottom: 3px; }
+#card p { margin: 5px 0; }
+.lv { display: grid; grid-template-columns: 62px 1fr; border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+.lv div { padding: 5px 9px; border-top: 1px solid rgba(74,63,42,.6); font-size: 13px; }
+.lv div:nth-child(-n+2) { border-top: 0; }
+.lv .k { color: var(--muted); font-family: Cinzel, serif; font-size: 12px; background: rgba(217,180,92,.05); }
+.lv .top { color: var(--gold-2); }
+.crit { font-size: 12.5px; border-left: 2px solid var(--line); padding: 2px 0 2px 10px; margin: 6px 0; }
+.crit b { color: var(--gold); font-weight: 600; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="card"></div>
+<div id="cap"><div><div class="t" id="ct"></div><div class="s" id="cs"></div></div><div id="badge"></div></div>
+<ul id="list"></ul>
+<button id="replay">↻ Toista</button>
+<a id="open" target="_blank" rel="noopener">Avaa koko taitopuu ↗</a>
+
+<script src="../data.js"></script>
+<script src="../puu.js"></script>
+<script>
+(function () {
+  'use strict';
+  const q = new URLSearchParams(location.search);
+  const mode = q.get('nayta') || 'luokat';
+  const M = Puu.build(window.TAITOPUU);
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const node = M.byId.get(q.get('id') || '') || null;
+  const full = new URL('../', location.href);
+  $('open').href = full.href + (node ? '#' + encodeURIComponent(node.id) : '');
+  const cap = (t, s) => { $('ct').textContent = t || ''; $('cs').textContent = s || ''; };
+  const badge = (b, s) => { $('badge').innerHTML = b ? `${esc(b)}${s ? `<small>${esc(s)}</small>` : ''}` : ''; };
+  const desc = n => [n, ...n.kids.flatMap(desc)];
+  let timers = [];
+  const later = (ms, f) => timers.push(setTimeout(f, ms));
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  // Animaatio käynnistyy vasta näkyvissä (artikkelissa nosto voi olla kaukana alhaalla)
+  function whenVisible(f) {
+    let done = false;
+    const go = () => { if (!done) { done = true; f(); } };
+    // sama origin: katsotaan upottavan sivun vierityksestä, onko nosto näkyvissä
+    let fe = null; try { fe = window.frameElement; } catch (e) {}
+    if (!fe) {
+      if (window.top === window) return go();            // avattu suoraan: aloita heti
+    } else {
+      const P = window.parent;
+      const check = () => { const r = fe.getBoundingClientRect(); if (r.top < P.innerHeight * .8 && r.bottom > P.innerHeight * .15) { go(); P.removeEventListener('scroll', check); } };
+      P.addEventListener('scroll', check, { passive: true }); check();
+    }
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); go(); } }, { threshold: .35 });
+      io.observe(document.body);
+    }
+    window.addEventListener('pointerenter', go, { once: true });
+  }
+
+  /* --------------------------------------------------------------- kortti */
+  if (mode === 'kortti') {
+    $('cv').style.display = 'none'; $('card').style.display = 'block'; $('cap').style.display = 'none';
+    const n = node || M.byId.get('MA.3.6');
+    const chain = []; let c = n.p && M.byId.get(n.p);
+    while (c) { chain.unshift(c); c = c.p && M.byId.get(c.p); }
+    let h = `<div class="kind">${Puu.TYYPIT[n.t]} · alkaa ${n._s}. luokalla</div><h2>${esc(n.n)}</h2><div class="crumbs">${chain.map(x => esc(x.n)).join(' › ')}</div>`;
+    if (n.o) h += `<p><b>Osaat, kun:</b> ${esc(n.o)}</p>`;
+    if (n.tl || n.h) {
+      h += `<h3>Taso luokittain</h3><div class="lv">`;
+      ['1–2', '3–6', '7–9'].forEach(k => { if (n.tl && n.tl[k]) h += `<div class="k">${k}</div><div>${esc(n.tl[k])}</div>`; });
+      if (n.h) h += `<div class="k top">Huippu</div><div class="top">${esc(n.h)}</div>`;
+      h += `</div>`;
+    }
+    if (n.c) {
+      h += `<h3>POPSin arviointikriteerit (sanatarkasti)</h3>`;
+      n.c.slice(0, 4).forEach(([, where, text]) => { h += `<div class="crit"><b>${esc(where)}</b><br>${esc(text)}</div>`; });
+    }
+    $('card').innerHTML = h;
+    return;
+  }
+
+  /* ---------------------------------------------------------- canvas-tilat */
+  const V = new Puu.View($('cv'), M, { crossLinks: mode === 'oppiaine' || mode === 'luokat', atomLabels: mode !== 'solmu' });
+  window.addEventListener('resize', () => V.resize());
+  V.grade = 10;
+  // ei panorointia eikä zoomia: nosto on kuva, jota voi osoittaa
+  $('cv').addEventListener('pointermove', e => { const n = V.pick(e.clientX, e.clientY); if (n !== V.hover) { V.hover = n; V.dirty = true; $('cv').style.cursor = n ? 'pointer' : ''; } });
+  $('cv').addEventListener('click', e => { const n = V.pick(e.clientX, e.clientY); if (n && n.id !== 'ROOT') window.open(full.href + '#' + encodeURIComponent(n.id), '_blank', 'noopener'); });
+  const play = f => { $('replay').style.display = 'block'; $('replay').onclick = () => { clear(); f(); }; whenVisible(f); };
+
+  if (mode === 'solmu') {
+    // Atomeista syntyy taito: atomit syttyvät yksi kerrallaan, sitten osataito
+    const n = node && node.t === 1 ? node : M.byId.get('MA.3.6');
+    const ai = M.byId.get(n.p);
+    cap(n.n, `${n.kids.length} käsitettä → yksi taito · ${ai.n}`);
+    V.cam = V.fitNodes([n, ...n.kids], .7); V.cam.z = Math.min(3.2, V.h / 170); V.cam.x += 60 / V.cam.z;
+    V.focus = new Set([M.root]);
+    play(() => {
+      V.focus = new Set([M.root]); V.sel = null; V.dirty = true; badge('', ''); $('list').innerHTML = '';
+      n.kids.slice().sort((a, b) => a._s - b._s).forEach((k, i) => later(500 + i * 700, () => {
+        V.focus.add(k); V.sel = k; V.dirty = true; badge(`${k._s}. lk`, 'käsite');
+        $('list').insertAdjacentHTML('beforeend', `<li>${esc(k.n)} <small>· ${k._s}. lk</small></li>`);
+      }));
+      later(700 + n.kids.length * 700, () => { V.focus.add(n); V.sel = n; V.dirty = true; badge(`${n._s}. lk →`, 'taito alkaa'); });
+    });
+  } else if (mode === 'luokat') {
+    // Koko puu syttyy luokka luokalta
+    cap('Peruskoulu luokka luokalta', `${M.nodes.filter(n => n.t === 1).length} taitoa, 18 osaamisaluetta`);
+    V.cam = V.fitAll(.98);
+    const os = M.nodes.filter(n => n.t === 1);
+    play(() => {
+      let g = 1; V.grade = 1; V.dirty = true;
+      const show = () => badge(g >= 10 ? 'Huippu' : `${g}. luokka`, `${os.filter(n => n._s <= Math.min(g, 9)).length} taitoa aloitettu`);
+      show();
+      const step = () => { g++; if (g > 10) return; V.grade = g; V.dirty = true; show(); later(1100, step); };
+      later(1100, step);
+    });
+  } else if (mode === 'polku') {
+    // Kaikki, mitä yksi taito vaatii, yli oppiainerajojen
+    const n = node || M.byId.get('HI.1.4');
+    const set = Puu.closure(n); let c = n.p && M.byId.get(n.p); while (c) { set.add(c); c = c.p && M.byId.get(c.p); }
+    const areas = new Set([...set].map(x => x.a));
+    cap(`Mitä vaatii: ${n.n}`, `${set.size} solmua ${areas.size} osaamisalueelta`);
+    const list = [...set];
+    V.cam = V.fitNodes(list, .82);
+    V.sel = n;
+    play(() => {
+      V.focus = new Set([M.root, n]); V.dirty = true;
+      const order = list.filter(x => x !== n).sort((a, b) => Math.hypot(a.x - n.x, a.y - n.y) - Math.hypot(b.x - n.x, b.y - n.y));
+      const step = Math.max(15, 2600 / order.length);
+      order.forEach((x, i) => later(400 + i * step, () => { V.focus.add(x); V.dirty = true; badge(`${V.focus.size - 1}`, 'solmua polulla'); }));
+    });
+  } else if (mode === 'oppiaine') {
+    // Yksi oppiaine levittäytyy monelle osaamisalueelle
+    const tag = q.get('tag') || 'YO';
+    const os = M.nodes.filter(n => n.t === 1 && (n.op || []).includes(tag));
+    const areas = new Set(os.map(n => n.a));
+    cap(`${Puu.OPPIAINEET[tag] || tag} taitopuussa`, `${os.length} taitoa ${areas.size} osaamisalueella`);
+    V.cam = V.fitAll(.98); V.filter = tag; V.dirty = true;
+    badge(`${areas.size}`, 'osaamisaluetta');
+  } else if (mode === 'alue') {
+    const a = node && node.t === 3 ? node : M.byId.get('MA');
+    cap(a.n, `${a.kids.length} aihetta · ${a.kids.reduce((s, x) => s + x.kids.length, 0)} taitoa`);
+    V.cam = V.fitNodes([a, ...desc(a)], .9); V.sel = a;
+    $('open').href = full.href + '#' + encodeURIComponent(a.id);
+  }
+})();
+</script>
+</body>
+</html>

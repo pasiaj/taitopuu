@@ -397,15 +397,15 @@
       }
       ctx.textAlign = 'center';
       if (z > 0.22) for (const n of this.m.nodes) {
-        if (n.t !== 2 || !vis(n) || (this.onlySet && !this.passes(n))) continue;
+        if (n.t !== 2 || !vis(n) || ((this.onlySet || this.focus) && !this.passes(n))) continue;
         lab(n, Math.min(15, 34 * z), this.passes(n) ? '#e8d6a8' : '#5e5548', n.r + 14 / z * 0.6 + 10, true);
       }
       if (z > (this.onlySet ? 0.38 : 0.62)) for (const n of this.m.nodes) {
-        if (n.t !== 1 || !vis(n) || (this.onlySet && !this.passes(n))) continue;
+        if (n.t !== 1 || !vis(n) || ((this.onlySet || this.focus) && !this.passes(n))) continue;
         lab(n, Math.min(13, 15 * z), this.passes(n) ? '#d9ccb0' : '#5a5246', n.r + 9 / z + 4, false);
       }
-      if (z > (this.onlySet ? 0.9 : 1.7)) for (const n of this.m.nodes) {
-        if (n.t !== 0 || !vis(n) || (this.onlySet && !this.passes(n))) continue;
+      if (this.o.atomLabels !== false && z > (this.onlySet ? 0.9 : 1.7)) for (const n of this.m.nodes) {
+        if (n.t !== 0 || !vis(n) || ((this.onlySet || this.focus) && !this.passes(n))) continue;
         lab(n, Math.min(11, 7.5 * z), this.passes(n) ? '#b9ad94' : '#4f493f', n.r + 7 / z + 3, false);
       }
     }
