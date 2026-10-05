@@ -11,6 +11,6 @@ cp index.html "$DEST/../index.html"   # etusivu: pasiaj.com/taitopuu/
 # versioleima: selain ei käytä vanhaa data.js:ää tai puu.js:ää välimuistista
 REV=$(git rev-parse --short HEAD)
 find "$DEST/.." -name "*.html" | while read -r f; do
-  sed -i.bak -E "s#src=\"(\.\./)?(data|puu)\.js\"#src=\"\1\2.js?v=$REV\"#g" "$f" && rm "$f.bak"
+  sed -i.bak -E "s#src=\"(\.\./)?(data|puu|katso-myos)\.js\"#src=\"\1\2.js?v=$REV\"#g" "$f" && rm "$f.bak"
 done
 echo "Kopioitu: $DEST ($(git rev-parse --short HEAD))"

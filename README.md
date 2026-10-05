@@ -6,7 +6,8 @@ Opetussuunnitelmat taitopuina, Path of Exile -pelin tyyliin.
 <https://pasiaj.com/taitopuu/peruskoulu/esittely/>, Diablo II -näkymä
 <https://pasiaj.com/taitopuu/peruskoulu/diablo/>, Duolingo-näkymä
 <https://pasiaj.com/taitopuu/peruskoulu/duolingo/>, Minecraft-näkymä
-<https://pasiaj.com/taitopuu/peruskoulu/minecraft/>
+<https://pasiaj.com/taitopuu/peruskoulu/minecraft/>, Skyrim-näkymä
+<https://pasiaj.com/taitopuu/peruskoulu/skyrim/>
 
 Sama sivusto GitHub Pagesissa: <https://pasiaj.github.io/taitopuu/>
 
@@ -33,6 +34,8 @@ tavoitteista, sisältöalueista ja arviointikriteereistä vuosiluokilla 1–2,
 | `peruskoulu/esittely/` | Animoitu kierros katsojalle, joka ei tunne puuta |
 | `peruskoulu/duolingo/` | Duolingo-näkymä: kurssi = osaamisalue, osio = vaihe, yksikkö = luokka, pallo = osataito, ja sen oppitunti kysyy niitä käsitteitä, jotka opitaan sillä luokalla (monivalinnat datasta). Kertauspokaalit, huipputaso, XP, putki ja päivän tavoite tallentuvat selaimeen. |
 | `peruskoulu/minecraft/` | Minecraft-näkymä: välilehti = osaamisalue, edistysaskelpuu kasvaa oikealle (alue → aihe → osataito saman aiheen edellytyksen perään), kokemuspalkin taso = luokka, "Edistysaskel saavutettu!" -ilmoitukset, työpöytä näyttää atomit raaka-aineina. Grafiikka on ohjelmallista pikseligrafiikkaa. |
+| `peruskoulu/skyrim/` | Skyrim-näkymä: 18 osaamisaluetta = Skyrimin 18 taitoa tähtikuvioina. Tähdet ovat osataitoja, jotka nousevat ylös luokan mukaan. Perkin tasot ovat POPSin vaiheet ja huippu, taitotaso 15–100 on alueen edistyminen, ja taivas kääntyy alueesta toiseen. |
+| `peruskoulu/katso-myos.js` | Vähäeleinen "Katso myös" -rivi muihin näkymiin, yhteinen kaikille sivuille |
 | `peruskoulu/diablo/` | Diablo II -näkymä: osaamisalue = hahmoluokka, aihe = taitovälilehti, rivi = luokka, jolla taito alkaa, taitotaso 0–20, synergiat = edellytykset muilta alueilta |
 | `peruskoulu/puu.js` | Asettelu ja piirto, yhteinen molemmille |
 | `peruskoulu/data.js` | Puun data (generoitu) |

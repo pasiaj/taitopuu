@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Peruskoulun tähtikuviot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Skyrim-henkinen taitotaivas: tähtikuviot yötaivaalla, ohut kondensoitu teksti. */
+:root { --text: #f2efe6; --muted: #a9a59a; --faint: #6f6c64; --line: rgba(255,255,255,.35); --glow: #bfe3ff; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #02030a; color: var(--text); font: 300 18px/1.35 "Barlow Condensed", "Arial Narrow", sans-serif; letter-spacing: .03em; }
+#sky { position: fixed; inset: 0; width: 100%; height: 100%; }
+#stage { position: fixed; left: 0; right: 0; top: 64px; bottom: 210px; }
+#con { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; transition: opacity .45s; }
+#con.fade { opacity: 0; }
+.star { cursor: pointer; }
+.lab { font: 400 15px "Barlow Condensed", sans-serif; letter-spacing: .12em; text-transform: uppercase; fill: var(--muted); pointer-events: none; }
+.lab.ai { fill: #d9d4c4; font-size: 14px; }
+
+/* yläpalkki */
+#top { position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; background: linear-gradient(rgba(0,0,0,.7), transparent); z-index: 4; flex-wrap: wrap; }
+#lvl { display: flex; align-items: center; gap: 14px; }
+#lvl .n { font-size: 26px; font-weight: 400; letter-spacing: .16em; text-transform: uppercase; }
+#lvl .bar { width: 220px; height: 8px; border: 1px solid rgba(255,255,255,.45); padding: 1px; }
+#lvl .bar i { display: block; height: 100%; background: linear-gradient(90deg, #8fb9d8, #e8f4ff); }
+#lvl button { background: none; border: 1px solid rgba(255,255,255,.35); color: var(--text); font: inherit; font-size: 20px; width: 34px; height: 34px; cursor: pointer; }
+#lvl button:hover { border-color: #fff; }
+.views { display: flex; gap: 18px; flex-wrap: wrap; }
+.views a { color: var(--muted); text-decoration: none; text-transform: uppercase; letter-spacing: .14em; font-size: 15px; }
+.views a:hover, .views a.on { color: #fff; }
+
+/* alapalkki: taitokaruselli ja perkin tiedot */
+#bottom { position: fixed; left: 0; right: 0; bottom: 0; height: 210px; z-index: 4; background: linear-gradient(transparent, rgba(0,0,0,.85) 35%); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 14px; }
+#perk { text-align: center; min-height: 92px; max-width: 760px; padding: 0 16px; }
+#perk .t { font-size: 26px; font-weight: 400; letter-spacing: .14em; text-transform: uppercase; }
+#perk .t small { font-size: 18px; color: var(--muted); letter-spacing: .08em; }
+#perk .d { font-size: 18px; color: var(--text); margin-top: 2px; }
+#perk .r { font-size: 16px; color: var(--muted); margin-top: 3px; }
+#perk .r b { color: #e8c37a; font-weight: 400; }
+#perk a { color: var(--glow); }
+#ring { position: relative; width: 100%; height: 72px; margin-top: 8px; overflow: hidden; }
+#ring button { position: absolute; top: 0; transform: translateX(-50%); background: none; border: 0; color: var(--text); font: inherit; cursor: pointer; text-transform: uppercase; letter-spacing: .14em; white-space: nowrap; transition: left .45s, opacity .45s, font-size .45s; text-align: center; }
+#ring button .lv { display: block; font-size: 15px; color: var(--muted); letter-spacing: .1em; }
+#ring button .pb { display: block; height: 4px; margin: 4px auto 0; width: 110px; border: 1px solid rgba(255,255,255,.35); padding: 1px; }
+#ring button .pb i { display: block; height: 100%; background: #dfeefb; }
+#hint { position: fixed; right: 18px; bottom: 12px; font-size: 13px; color: var(--faint); z-index: 5; letter-spacing: .08em; text-align: right; }
+#hint a { color: var(--muted); }
+#mkatso { display: none; }
+
+@media (max-width: 700px) {
+  #stage { top: 96px; bottom: 230px; }
+  #lvl .bar { width: 110px; }
+  #lvl .n { font-size: 20px; }
+  #perk .t { font-size: 21px; }
+  #perk .d { font-size: 16px; }
+  #bottom { height: 230px; }
+  #hint { display: none; }
+  #mkatso { display: block; text-align: center; font-size: 13px; color: var(--faint); margin-top: 4px; }
+  #mkatso a { color: var(--muted); }
+}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div id="top">
+  <div id="lvl"><button id="gm" aria-label="Edellinen luokka">‹</button><span class="n" id="gn"></span><span class="bar"><i id="gb"></i></span><button id="gp" aria-label="Seuraava luokka">›</button></div>
+</div>
+<div id="stage"><svg id="con"></svg></div>
+<div id="bottom"><div id="perk"></div><div id="ring"></div><div id="mkatso" data-katso></div></div>
+<div id="hint">← → vaihda taitoa · ↑ ↓ luokka · klikkaa tähteä<br><span data-katso></span></div>
+
+<script src="../data.js"></script>
+<script src="../katso-myos.js"></script>
+<script>
+(function () {
+  'use strict';
+  const D = window.TAITOPUU;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ------------------------------------------------------------- malli */
+  const by = new Map(D.nodes.map(n => [n.id, Object.assign({ kids: [] }, n)]));
+  const N = [...by.values()];
+  N.forEach(n => { if (n.p && by.has(n.p)) by.get(n.p).kids.push(n); });
+  N.forEach(n => n.kids.sort((a, b) => a.id.localeCompare(b.id, 'fi', { numeric: true })));
+  const AREAS = D.ryhmat.flatMap(g => g.a).map(id => by.get(id));
+  AREAS.forEach((a, i) => { a.hue = i / AREAS.length * 360; a.idx = i; });
+  const start = n => n.s != null ? n.s : n.kids.length ? Math.min(...n.kids.map(start)) : 9;
+  const STAGES = [['1–2', 1], ['3–6', 3], ['7–9', 7]];
+  function rng(seed) { let h = 2166136261; for (const c of String(seed)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; }
+
+  // Perkin tasot: POPSin vaiheet, joissa taidolla on kuvaus, ja lopuksi huippu
+  function ranks(o) {
+    const r = STAGES.filter(([k]) => o.tl && o.tl[k]).map(([k, g]) => ({ k, g: Math.max(g, start(o)), text: o.tl[k] }));
+    r.push({ k: 'Huippu', g: 10, text: o.h || '' });
+    return r;
+  }
+  const rankAt = (o, g) => g < start(o) ? 0 : ranks(o).filter(r => r.g <= g).length || 1;
+  // Taitotaso 15–100 kuten Skyrimissa: alueen taitojen keskimääräinen eteneminen
+  function skillLevel(a, g) {
+    const os = a.kids.flatMap(x => x.kids);
+    const p = os.reduce((s, o) => s + rankAt(o, g) / ranks(o).length, 0) / Math.max(1, os.length);
+    return Math.round(15 + 85 * p);
+  }
+
+  /* --------------------------------------------------------- tähtikuvio */
+  // Aiheet sarakkeina; aiheen tähti alhaalla, sen taidot nousevat ylös luokan mukaan.
+  // Tähti kytkeytyy saman aiheen aiempaan edellytykseensä, muuten aiheen tähteen.
+  function constellation(a) {
+    const r = rng(a.id), cols = a.kids.length, pts = [], links = [];
+    const W = 1000, H = 600, x0 = 70, x1 = 930;
+    a.kids.forEach((ai, ci) => {
+      const cx = cols === 1 ? 500 : x0 + (x1 - x0) * ci / (cols - 1);
+      const base = { n: ai, x: cx + (r() - .5) * 30, y: H - 40 - (ci % 2) * 26, kind: 'ai' };
+      pts.push(base);
+      const os = ai.kids.slice().sort((p, q) => start(p) - start(q));
+      const placed = new Map();
+      const sameRow = {};
+      os.forEach(o => {
+        const g = start(o);
+        const k = (sameRow[g] = (sameRow[g] || 0) + 1) - 1;
+        const spread = Math.min(70, (x1 - x0) / cols * .42);
+        const dx = (k % 2 ? 1 : -1) * Math.ceil(k / 2) * spread * .8 + (r() - .5) * 26;
+        const y = H - 110 - (g - 1) / 8 * (H - 170) - k * 14 + (r() - .5) * 22;
+        const p = { n: o, x: cx + dx, y, kind: 'os' };
+        pts.push(p); placed.set(o.id, p);
+        const pre = (o.e || []).map(id => placed.get(id)).filter(Boolean).sort((u, v) => v.y - u.y);
+        links.push([pre.length ? pre[pre.length - 1] : base, p]);
+        pre.slice(0, -1).forEach(q => { if (Math.abs(q.x - p.x) < 220) links.push([q, p, true]); });
+      });
+    });
+    return { pts, links, W, H };
+  }
+
+  /* ------------------------------------------------------------------ tila */
+  const st = { ai: 0, grade: 10, sel: null };
+  let C = null;
+
+  function renderCon() {
+    const a = AREAS[st.ai], g = st.grade;
+    C = constellation(a);
+    const svg = $('con');
+    svg.setAttribute('viewBox', `0 0 ${C.W} ${C.H}`);
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    let h = `<defs><radialGradient id="sg"><stop offset="0" stop-color="#fff" stop-opacity="1"/><stop offset=".25" stop-color="#d8eeff" stop-opacity=".9"/><stop offset="1" stop-color="#8fc8ff" stop-opacity="0"/></radialGradient>
+      <filter id="bl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2"/></filter></defs>`;
+    C.links.forEach(([p, q, weak]) => {
+      const on = (p.kind === 'ai' || rankAt(p.n, g) > 0) && rankAt(q.n, g) > 0;
+      h += `<line x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}" stroke="${on ? 'rgba(235,245,255,.75)' : 'rgba(255,255,255,.16)'}" stroke-width="${weak ? .8 : on ? 1.6 : 1.1}" ${weak ? 'stroke-dasharray="3 5"' : ''}/>`;
+    });
+    C.pts.forEach((p, i) => {
+      const o = p.n;
+      if (p.kind === 'ai') {
+        const any = o.kids.some(k => rankAt(k, g) > 0);
+        h += `<g class="star" data-i="${i}"><circle cx="${p.x}" cy="${p.y}" r="22" fill="url(#sg)" opacity="${any ? .55 : .15}"/><circle cx="${p.x}" cy="${p.y}" r="${any ? 4.5 : 3}" fill="${any ? '#fff' : '#8d8b86'}"/><circle cx="${p.x}" cy="${p.y}" r="16" fill="transparent"/>
+          <text class="lab ai" x="${p.x}" y="${p.y + 30}" text-anchor="middle">${esc(shortName(o.n))}</text></g>`;
+        return;
+      }
+      const rk = rankAt(o, g), max = ranks(o).length, on = rk > 0, full = rk >= max;
+      const sel = st.sel === o;
+      const tw = (i * 37 % 10) / 10;
+      h += `<g class="star" data-i="${i}">`;
+      if (on) h += `<circle cx="${p.x}" cy="${p.y}" r="${16 + rk * 4}" fill="url(#sg)" opacity="${.35 + .5 * rk / max}"><animate attributeName="opacity" values="${.3 + .4 * rk / max};${.5 + .5 * rk / max};${.3 + .4 * rk / max}" dur="${3 + tw * 3}s" repeatCount="indefinite"/></circle>`;
+      if (full) h += `<circle cx="${p.x}" cy="${p.y}" r="9" fill="none" stroke="rgba(255,236,190,.8)" stroke-width="1"/>`;
+      h += `<circle cx="${p.x}" cy="${p.y}" r="${on ? 2.8 + rk * .7 : 2.2}" fill="${on ? '#fff' : '#57565a'}" stroke="${on ? 'none' : 'rgba(255,255,255,.35)'}" stroke-width=".8"/>`;
+      if (sel) h += `<circle cx="${p.x}" cy="${p.y}" r="14" fill="none" stroke="#fff" stroke-width="1.2" filter="url(#bl)"/><circle cx="${p.x}" cy="${p.y}" r="13" fill="none" stroke="#fff" stroke-width=".8"/>`;
+      h += `<circle cx="${p.x}" cy="${p.y}" r="14" fill="transparent"/>`;
+      if (sel) h += `<text class="lab" x="${p.x}" y="${p.y - 22}" text-anchor="middle" style="fill:#fff">${esc(o.n)}</text>`;
+      h += `</g>`;
+    });
+    svg.innerHTML = h;
+    svg.querySelectorAll('.star').forEach(el => {
+      const p = C.pts[+el.dataset.i];
+      el.onmouseenter = () => { if (!st.sel || st.hoverPreview) showPerk(p.n, true); };
+      el.onmouseleave = () => { showPerk(st.sel, false); };
+      el.onclick = e => { e.stopPropagation(); st.sel = p.n; renderCon(); showPerk(p.n, false); };
+    });
+  }
+  const firstSentence = s => { const i = s.indexOf('. '); return i > 0 && i < 220 ? s.slice(0, i + 1) : s.length > 220 ? s.slice(0, 217) + '…' : s; };
+  const shortName = s => s.length > 26 ? s.slice(0, 24) + '…' : s;
+
+  function showPerk(o, hover) {
+    const a = AREAS[st.ai], g = st.grade, P = $('perk');
+    if (!o) {
+      P.innerHTML = `<div class="t">${esc(a.n)}</div><div class="d">${esc(firstSentence(a.k || a.h || ''))}</div><div class="r">Klikkaa tähteä nähdäksesi taidon. Kirkkaat tähdet ovat hallussa ${g >= 10 ? '9. luokan lopussa' : g + '. luokalla'}.</div>`;
+      return;
+    }
+    if (o.t === 2) {
+      const n = o.kids.length, on = o.kids.filter(k => rankAt(k, g) > 0).length;
+      P.innerHTML = `<div class="t">${esc(o.n)}</div><div class="d">${esc(o.k || '')}</div><div class="r">${on} / ${n} taitoa tähtikuviossa auki</div>`;
+      return;
+    }
+    const rs = ranks(o), rk = rankAt(o, g), cur = rs[rk - 1], nxt = rs[rk];
+    let h = `<div class="t">${esc(o.n)} <small>(${rk}/${rs.length})</small></div>`;
+    h += `<div class="d">${esc(cur ? cur.text : o.o || o.k || '')}</div>`;
+    if (rk === 0) h += `<div class="r">Vaatii: <b>${start(o)}. luokka</b>${rs[0] ? ' · ensimmäinen taso: ' + esc(rs[0].text) : ''}</div>`;
+    else if (nxt) h += `<div class="r">Seuraava taso: <b>${nxt.k === 'Huippu' ? 'huippu (9. luokan arvosana 9)' : nxt.k + ' (luokalta ' + nxt.g + ')'}</b></div>`;
+    else h += `<div class="r"><b>Huipputaso saavutettu.</b></div>`;
+    if (!hover) h += `<div class="r">${o.o ? 'Osaat, kun: ' + esc(o.o) + ' · ' : ''}<a href="../#${encodeURIComponent(o.id)}">Näytä Path of Exile -puussa</a></div>`;
+    P.innerHTML = h;
+  }
+
+  /* ------------------------------------------------------------- karuselli */
+  function renderRing() {
+    const R = $('ring'), w = R.clientWidth, g = st.grade;
+    if (!R.children.length) AREAS.forEach((a, i) => {
+      const b = document.createElement('button'); b.dataset.i = i;
+      b.onclick = () => go(i);
+      R.appendChild(b);
+    });
+    const step = Math.max(150, Math.min(240, w / 5));
+    [...R.children].forEach((b, i) => {
+      let d = i - st.ai; if (d > 9) d -= 18; if (d < -9) d += 18;
+      const a = AREAS[i], lv = skillLevel(a, g);
+      b.innerHTML = `${esc(a.n)}<span class="lv">${lv}</span><span class="pb"><i style="width:${lv}%"></i></span>`;
+      b.style.left = (w / 2 + d * step) + 'px';
+      b.style.opacity = d === 0 ? 1 : Math.max(0, .55 - Math.abs(d) * .14);
+      b.style.fontSize = d === 0 ? '24px' : '17px';
+      b.style.pointerEvents = Math.abs(d) > 3 ? 'none' : 'auto';
+      b.style.maxWidth = d === 0 ? '420px' : step - 16 + 'px';
+      b.style.overflow = 'hidden'; b.style.textOverflow = 'ellipsis';
+      b.querySelector('.pb').style.visibility = d === 0 ? 'visible' : 'hidden';
+    });
+  }
+
+  /* -------------------------------------------------------------- taivas */
+  const sky = $('sky'), sx = sky.getContext('2d');
+  let stars = [], skyOff = 0, skyTarget = 0;
+  function buildSky() {
+    const r = rng('taivas'); stars = [];
+    for (let i = 0; i < 1400; i++) stars.push({ x: r() * 3600, y: r(), z: .3 + r() * .7, s: r() < .03 ? 1.6 : r() < .2 ? 1.1 : .7, tw: r() * 6.28 });
+  }
+  function drawSky(t) {
+    const dpr = window.devicePixelRatio || 1, W = innerWidth, H = innerHeight;
+    if (sky.width !== Math.round(W * dpr)) { sky.width = Math.round(W * dpr); sky.height = Math.round(H * dpr); }
+    sx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    skyOff += (skyTarget - skyOff) * .06;
+    const g = sx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#02030a'); g.addColorStop(.6, '#060b1a'); g.addColorStop(1, '#0d1424');
+    sx.fillStyle = g; sx.fillRect(0, 0, W, H);
+    // sumut: yksi kunkin taidon värisävyssä, taivaan mukana kiertäen
+    AREAS.forEach((a, i) => {
+      const x = ((i * 200 - skyOff) % 3600 + 3600) % 3600 - 600 + W / 2 - 400;
+      if (x < -700 || x > W + 700) return;
+      const ng = sx.createRadialGradient(x, H * .4, 0, x, H * .4, 520);
+      ng.addColorStop(0, `hsla(${a.hue},55%,45%,.16)`); ng.addColorStop(.5, `hsla(${(a.hue + 40) % 360},50%,30%,.07)`); ng.addColorStop(1, 'rgba(0,0,0,0)');
+      sx.fillStyle = ng; sx.fillRect(x - 520, H * .4 - 520, 1040, 1040);
+    });
+    const time = t / 1000;
+    stars.forEach(s => {
+      const x = ((s.x - skyOff * s.z) % 3600 + 3600) % 3600 - (3600 - W) / 2;
+      if (x < -2 || x > W + 2) return;
+      const a = .35 + .4 * Math.sin(time * 1.3 + s.tw) * .5 + .3 * s.z;
+      sx.fillStyle = `rgba(230,240,255,${a})`;
+      sx.fillRect(x, s.y * H, s.s, s.s);
+    });
+    // horisontin vuorten siluetti
+    sx.fillStyle = '#020307';
+    sx.beginPath(); sx.moveTo(0, H);
+    for (let x = 0; x <= W + 20; x += 20) {
+      const X = x + skyOff * .35;
+      const y = H - 120 - 50 * Math.sin(X * .004) - 30 * Math.sin(X * .011 + 1) - 14 * Math.sin(X * .031);
+      sx.lineTo(x, y);
+    }
+    sx.lineTo(W, H); sx.closePath(); sx.fill();
+    requestAnimationFrame(drawSky);
+  }
+
+  /* ---------------------------------------------------------------- ohjaus */
+  function renderLevel() {
+    const g = st.grade;
+    $('gn').textContent = g >= 10 ? 'Huippu' : `Luokka ${g}`;
+    $('gb').style.width = (g / 10 * 100) + '%';
+  }
+  function go(i) {
+    i = (i + AREAS.length) % AREAS.length;
+    if (i === st.ai) return;
+    let d = i - st.ai; if (d > 9) d -= 18; if (d < -9) d += 18;
+    st.ai = i; st.sel = null; skyTarget += d * 200;
+    $('con').classList.add('fade');
+    setTimeout(() => { renderCon(); $('con').classList.remove('fade'); }, 280);
+    renderRing(); showPerk(null); writeHash();
+  }
+  function setGrade(g) { st.grade = Math.max(1, Math.min(10, g)); renderLevel(); renderCon(); renderRing(); showPerk(st.sel); writeHash(); }
+  const writeHash = () => history.replaceState(null, '', `#${AREAS[st.ai].id}/${st.grade}`);
+  $('gm').onclick = () => setGrade(st.grade - 1);
+  $('gp').onclick = () => setGrade(st.grade + 1);
+  window.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') go(st.ai - 1);
+    if (e.key === 'ArrowRight') go(st.ai + 1);
+    if (e.key === 'ArrowUp' || e.key === '+') { e.preventDefault(); setGrade(st.grade + 1); }
+    if (e.key === 'ArrowDown' || e.key === '-') { e.preventDefault(); setGrade(st.grade - 1); }
+    if (e.key === 'Escape') { st.sel = null; renderCon(); showPerk(null); }
+  });
+  // pyyhkäisy puhelimella vaihtaa taitoa
+  let tx = null;
+  $('stage').addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  $('stage').addEventListener('touchend', e => { if (tx == null) return; const d = e.changedTouches[0].clientX - tx; if (Math.abs(d) > 60) go(st.ai + (d < 0 ? 1 : -1)); tx = null; });
+  document.addEventListener('click', e => { if (e.target.closest('#bottom') || e.target.closest('#top')) return; if (st.sel) { st.sel = null; renderCon(); showPerk(null); } });
+  window.addEventListener('resize', renderRing);
+
+  const [ha, hg] = decodeURIComponent(location.hash.slice(1)).split('/');
+  const hi = AREAS.findIndex(a => a.id === ha);
+  st.ai = hi >= 0 ? hi : 0; st.grade = Math.max(1, Math.min(10, +hg || 10));
+  skyTarget = skyOff = st.ai * 200;
+  buildSky(); requestAnimationFrame(drawSky);
+  renderLevel(); renderCon(); renderRing(); showPerk(null);
+})();
+</script>
+</body>
+</html>

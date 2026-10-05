@@ -110,13 +110,6 @@ button { font: inherit; }
 <body>
 <div id="head">
   <h1>Peruskoulun edistysaskeleet<small>Minecraft-näkymä · POPS 2014</small></h1>
-  <div class="views">
-    <a class="mcbtn" href="../">Path of Exile</a>
-    <a class="mcbtn" href="../diablo/">Diablo II</a>
-    <a class="mcbtn" href="../duolingo/">Duolingo</a>
-    <a class="mcbtn on" href="./">Minecraft</a>
-    <a class="mcbtn" href="https://github.com/pasiaj/taitopuu" target="_blank" rel="noopener">GitHub</a>
-  </div>
 </div>
 <div id="wrap">
   <div id="tabs" role="tablist"></div>
@@ -126,13 +119,14 @@ button { font: inherit; }
   </div>
   <div id="xp"><div class="lvl" id="lvl"></div><div class="bar" id="bar"></div><div class="hint" id="hint"></div></div>
 </div>
-<div id="foot">Välilehti on osaamisalue. Puu kasvaa vasemmalta oikealle: alue → aiheet (pyöreä kehys) → osataidot (neliö). Osataito haarautuu saman aiheen edellytyksestään. Kultainen kehys tarkoittaa, että taito on auki valitulla luokalla. Kokemuspalkin taso on luokka. Klikkaa taitoa, niin työpöytä näyttää, mistä käsitteistä se rakentuu. Lähde: Opetushallitus, POPS 2014.</div>
+<div id="foot">Välilehti on osaamisalue. Puu kasvaa vasemmalta oikealle: alue → aiheet (pyöreä kehys) → osataidot (neliö). Osataito haarautuu saman aiheen edellytyksestään. Kultainen kehys tarkoittaa, että taito on auki valitulla luokalla. Kokemuspalkin taso on luokka. Klikkaa taitoa, niin työpöytä näyttää, mistä käsitteistä se rakentuu. Lähde: Opetushallitus, POPS 2014.<br><br><span data-katso></span></div>
 
 <div id="tip"></div>
 <div id="toasts"></div>
 <div id="craft"><div id="cwin" class="bevel"><button class="x" id="cx" aria-label="Sulje">✕</button><div id="cbody"></div></div></div>
 
 <script src="../data.js"></script>
+<script src="../katso-myos.js"></script>
 <script>
 (function () {
   'use strict';

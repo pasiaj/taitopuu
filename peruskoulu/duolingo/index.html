@@ -147,10 +147,6 @@ button { font: inherit; }
     <div class="logo">taitopolku<small>peruskoulu · POPS 2014</small></div>
     <button class="nv on" id="navpath"><span class="ico">🏠</span><span class="lab">Oppiminen</span></button>
     <button class="nv" id="navcourse"><span class="ico">🎓</span><span class="lab">Vaihda kurssia</span></button>
-    <a href="../"><span class="ico">✦</span><span class="lab">Path of Exile</span></a>
-    <a href="../diablo/"><span class="ico">⚔</span><span class="lab">Diablo II</span></a>
-    <a href="../minecraft/"><span class="ico">⛏</span><span class="lab">Minecraft</span></a>
-    <a href="https://github.com/pasiaj/taitopuu" target="_blank" rel="noopener"><span class="ico">⌥</span><span class="lab">GitHub</span></a>
   </nav>
   <main>
     <div id="top">
@@ -178,6 +174,7 @@ button { font: inherit; }
 </div>
 
 <script src="../data.js"></script>
+<script src="../katso-myos.js"></script>
 <script>
 (function () {
   'use strict';
@@ -296,7 +293,8 @@ button { font: inherit; }
       h += `</div></div>`;
     });
     if (!units.length) h = '<p class="small">Tällä kurssilla ei ole luokkiin sidottuja käsitteitä.</p>';
-    $('path').innerHTML = h;
+    $('path').innerHTML = h + '<p class="small" style="text-align:center;margin-top:40px" data-katso></p>';
+    if (window.katsoMyos) window.katsoMyos();
     $('path').querySelectorAll('.node').forEach(b => b.onclick = e => { e.stopPropagation(); openPop(+b.dataset.i, b); });
     $('path').querySelectorAll('[data-guide]').forEach(b => b.onclick = () => openGuide(units[+b.dataset.guide]));
   }
@@ -310,8 +308,9 @@ button { font: inherit; }
     if (area.h) h += `<div class="small" style="margin-top:10px">Polun päässä: ${esc(area.h)}</div>`;
     h += `</div>`;
     h += `<div class="card"><h4>Mikä tämä on?</h4><div class="small">Peruskoulun opetussuunnitelma (POPS 2014) oppimispolkuna. Jokainen yksikkö on yksi luokka, ja jokainen pallo on taito, jonka käsitteitä sillä luokalla opitaan. Oppitunnin kysymykset tulevat taitopuun käsitteistä ja niiden kuvauksista. Edistyminen tallentuu vain tähän selaimeen.</div></div>`;
-    h += `<div class="links"><a href="../">Taitopuu</a><a href="../diablo/">Diablo II</a><a href="../minecraft/">Minecraft</a><a href="https://github.com/pasiaj/taitopuu" target="_blank" rel="noopener">GitHub</a></div>`;
+    h += `<div class="small" data-katso></div>`;
     $('side').innerHTML = h;
+    if (window.katsoMyos) window.katsoMyos();
   }
 
   /* -------------------------------------------------------------- ponnahdus */
