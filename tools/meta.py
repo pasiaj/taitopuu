@@ -28,7 +28,7 @@ PAGES = {
         'Kaikki, mitä huippuoppilas osaa peruskoulun päättyessä: 617 taitoa ja 1 874 käsitettä '
         'Opetushallituksen opetussuunnitelmasta jaoteltuna 18 osaamisalueeseen ja piirrettynä pelien taitopuina.', True),
     'peruskoulu/esittely/index.html': (
-        'Mitä peruskoulussa oikeastaan opitaan?',
+        'Peruskoulu taitopuuna',
         'Kymmenen vaiheen kierros peruskoulun taitopuuhun: käsitteistä taidoiksi, taidoista osaamisalueiksi '
         'ja luokka luokalta huipputasolle. Opetussuunnitelma satojen sivujen sijaan yhtenä karttana.', True),
     'peruskoulu/index.html': (
